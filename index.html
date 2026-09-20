@@ -2361,6 +2361,28 @@ G.projTemas=function(){
   TEMAS.forEach(x=>{const st=G.temaSt(x.k); ac+=ACC_DEG[st.g]*x.q; if(st.g>0)cob+=x.q});
   return {acertos:ac/5, cobertura:cob/4};
 };
+/* capítulos triados por disciplina, cada um com o que ler e onde estão as questões */
+const CAPS = (function(){
+  const el=document.getElementById('d-capitulos'); if(!el) return {};
+  try{ return JSON.parse(el.textContent) }catch(e){ G.dataNotes.push('Capítulos: JSON inválido'); return {} }
+})();
+G.CAPS=CAPS;
+/* o capítulo que serve o tema, dentro da disciplina do bloco */
+G.capDoTema=function(discId,k){
+  const lista=CAPS[discId]||[]; if(!lista.length) return null;
+  const doTema=lista.filter(c=>(c.t||[]).includes(k));
+  return (doTema[0]||null);
+};
+/* próximo capítulo em aberto de uma disciplina: prioriza os temas de maior incidência */
+G.capProximo=function(discId){
+  const lista=CAPS[discId]||[]; if(!lista.length) return null;
+  let melhor=null, melhorQ=-1;
+  lista.forEach(c=>{(c.t||[]).forEach(k=>{
+    const t=TEMA_K[k]; if(!t) return;
+    const st=G.temaSt(k); if(st.g===0||G.temaFechado(k)) return;
+    if(t.q>melhorQ){melhorQ=t.q; melhor={cap:c,tema:t}}})});
+  return melhor;
+};
 /* tema ativo de uma disciplina: o de maior incidência ainda aberto */
 G.temaAtivo=function(discId){
   const nome=TEMA_DISC[discId]; if(!nome) return null;
@@ -2375,7 +2397,53 @@ G.temaRegistrar=function(k,min,q,ok){
   st.q=(st.q||0)+(q||0); st.ok=(st.ok||0)+(ok||0);
   G.touch('temas');
 };
-G.temaNivel=function(k,n){ G.temaSt(k).n=n; G.touch('temas') };
+G.temaNivel=function(k,n){ G.temaSt(k).n=n; G.temaSt(k).nm=true; G.touch('temas') };
+/* nível medido: o que as questões lançadas no tema dizem, independente do que foi declarado.
+   Null enquanto não houver questões suficientes — aí vale só o palpite de quem declarou. */
+G.nivelMedido=function(k){
+  const st=G.temaSt(k); if(st.q<G.MINQ) return null;
+  const p=st.ok/st.q;
+  return {n:p>=.8?3:(p>=.6?2:1), p, q:st.q};
+};
+/* temas em que o nível declarado briga com o medido */
+G.niveisEmConflito=function(){
+  const out=[];
+  TEMAS.forEach(x=>{const m=G.nivelMedido(x.k); if(!m) return; const st=G.temaSt(x.k);
+    if(m.n!==st.n) out.push({tema:x,declarado:st.n,medido:m.n,p:m.p,q:m.q})});
+  return out.sort((a,b)=>b.tema.q-a.tema.q);
+};
+
+/* ---------- dificuldade da edição ----------
+   A ENFAM não publica estatística por item, mas publica quantos habilitaram em cada edição.
+   Dessa taxa dá para estimar a média da coorte: se p% passaram dos 56 acertos, a média fica
+   56 − z(1−p)·σ. Assumimos σ = 8 questões, que é o usual numa objetiva de 80 itens — é
+   suposição, e está dita na tela. Serve para comparar desempenho entre edições muito
+   desiguais: 2025.2 habilitou 6,3% e 2026.1 habilitou 24,4%. */
+const SIGMA_ENAM=8;
+function invNorm(p){
+  const a=[-3.969683028665376e1,2.209460984245205e2,-2.759285104469687e2,1.38357751867269e2,-3.066479806614716e1,2.506628277459239],
+        b=[-5.447609879822406e1,1.615858368580409e2,-1.556989798598866e2,6.680131188771972e1,-1.328068155288572e1],
+        c=[-7.784894002430293e-3,-3.223964580411365e-1,-2.400758277161838,-2.549732539343734,4.374664141464968,2.938163982698783],
+        d=[7.784695709041462e-3,3.224671290700398e-1,2.445134137142996,3.754408661907416], pl=.02425;
+  let q,r;
+  if(p<pl){ q=Math.sqrt(-2*Math.log(p)); return (((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1) }
+  if(p<=1-pl){ q=p-.5; r=q*q; return (((((a[0]*r+a[1])*r+a[2])*r+a[3])*r+a[4])*r+a[5])*q/(((((b[0]*r+b[1])*r+b[2])*r+b[3])*r+b[4])*r+1) }
+  q=Math.sqrt(-2*Math.log(1-p)); return -(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);
+}
+G.dificuldade=function(ed){
+  const h=((F.ENAM||{}).hist||[]).find(x=>x.ed===ed); if(!h||!h.pct) return null;
+  const media=F.ENAM.minimo-invNorm(1-h.pct/100)*SIGMA_ENAM;
+  return {ed,pct:h.pct,media};
+};
+G.dificuldadeRef=function(){
+  const hs=((F.ENAM||{}).hist||[]).map(x=>G.dificuldade(x.ed)).filter(Boolean);
+  return hs.length?hs.reduce((t,x)=>t+x.media,0)/hs.length:null;
+};
+/* acertos ajustados: quanto valeriam numa edição de dificuldade média */
+G.ajustado=function(ok,ed){
+  const d=G.dificuldade(ed), ref=G.dificuldadeRef(); if(!d||ref==null) return null;
+  return {bruto:ok, ajustado:ok+(ref-d.media), delta:ref-d.media, pct:d.pct, media:d.media};
+};
 
 /* ---------- sessões e estatísticas (st = estado de qualquer perfil) ---------- */
 G.addSession = function(o){
@@ -2495,6 +2563,19 @@ G.salvarProva = function(p,min){
     S.sessoes.push({id:uid(),d:t,disc,min:m,tipo:'simulado',q:d.n,ok:d.ok,nota:p.nome,ciclo:false,prova:p.id})});
   G.touch('provas','simulados','sessoes'); return r;
 };
+/* simulado do ENAM lançado à mão: grava o total E os acertos por disciplina de uma vez só,
+   do mesmo jeito que a folha de respostas faz. Antes exigia dois lançamentos. */
+G.addSimuladoEnam = function(o){
+  const t=o.d||today(), min=clamp(+o.min||0,0,600), sid='sim:'+uid(), q8=DISC.filter(d=>d.enam);
+  const pd={}; let total=0, n=0;
+  q8.forEach(d=>{const ok=clamp(+(o.porDisc||{})[d.id]||0,0,d.enam); pd[d.id]=ok; total+=ok; n+=d.enam});
+  S.simulados.push({id:sid,tipo:'enam',d:t,nome:o.nome||'Simulado do ENAM',total});
+  let qAcum=0, minAcum=0;   /* reparte os minutos sem sobra de arredondamento */
+  q8.forEach(d=>{qAcum+=d.enam; const alvo=Math.round(min*qAcum/n), m=alvo-minAcum; minAcum=alvo;
+    S.sessoes.push({id:uid(),d:t,disc:d.id,min:m,tipo:'simulado',q:d.enam,ok:pd[d.id],nota:o.nome||'Simulado do ENAM',ciclo:false,sim:sid})});
+  G.touch('simulados','sessoes');
+  return {total,n,id:sid};
+};
 G.refazerProva = function(p){
   delete S.provas[p.id]; S.simulados=S.simulados.filter(x=>x.id!=='prova:'+p.id); S.sessoes=S.sessoes.filter(s=>s.prova!==p.id);
   G.touch('provas','simulados','sessoes');
@@ -2553,10 +2634,18 @@ V.hoje=function(){
   const pst=pc.restam===0?'good':pc.porBloco<=1?'good':pc.porBloco<=1.5?'warn':'crit';
   let n=0;
   const doneHtml=p.done.map(s=>`<div class="pi done"><span class="n">${++n}</span><div><div class="t">${dot(byId[s.disc].bloco)}${esc(byId[s.disc].nome)}</div><div class="s">${G.hm(s.min)}${s.q?` · ${s.ok}/${s.q} questões`:''}</div></div><div class="acts"><span class="pill good">feito</span></div></div>`).join('');
-  const nextHtml=p.next.map((id,i)=>`<div class="pi"><span class="n">${++n}</span><div><div class="t">${dot(byId[id].bloco)}${esc(byId[id].nome)}</div><div class="s">${esc(G.blockPlan())}</div></div><div class="acts row">${i===0&&!ui.timer?`<button class="btn sm primary" data-act="timer-start" data-arg="${id}">Iniciar</button>`:''}<button class="btn sm" data-act="log" data-arg="${id}|1">Concluir</button></div></div>`).join('');
+  const nextHtml=p.next.map((id,i)=>{
+    const alvo=G.capProximo?G.capProximo(id):null;
+    const corpo = alvo
+      ? `<div class="s"><b>${esc(alvo.tema.m)}</b> · ${alvo.tema.qp.toFixed(1)} q/prova · ${esc(G.DEG[G.temaSt(alvo.tema.k).g])}</div>
+         <div class="s"><span class="eyebrow">ler</span> ${esc(alvo.cap.a)} — ${esc(alvo.cap.l)}</div>
+         <div class="s"><span class="eyebrow">questões</span> ${esc(alvo.cap.q)}</div>
+         <div class="tiny faint">${esc(G.blockPlan())}</div>`
+      : `<div class="s">${esc(G.blockPlan())}</div><div class="tiny faint">Nenhum macro-tema aberto nesta disciplina — libere degraus em Ritmo.</div>`;
+    return `<div class="pi" style="align-items:flex-start"><span class="n">${++n}</span><div><div class="t">${dot(byId[id].bloco)}${esc(byId[id].nome)}</div>${corpo}</div><div class="acts row">${i===0&&!ui.timer?`<button class="btn sm primary" data-act="timer-start" data-arg="${id}">Iniciar</button>`:''}<button class="btn sm" data-act="log" data-arg="${id}|1">Concluir</button></div></div>`}).join('');
   return `
   <header class="page-head"><div><div class="eyebrow">${DIAS[d.getDay()]}, ${G.fmt(G.today())} · ${esc(f.nome)}</div><h1>Pauta do dia${nome}</h1><p>${esc(f.foco)}</p></div>
-    <div class="row"><button class="btn" data-act="log" data-arg="|0">Registrar estudo avulso</button></div></header>
+    <div class="row"><button class="btn" data-act="log" data-arg="|0">Registrar estudo</button></div></header>
   ${!S.cfg.onboarded?`<div class="alert gold"><span class="mark">1º passo</span><div><b>Ajuste seu perfil para o ciclo ficar sob medida</b><span class="small">A pauta abaixo usa o padrão (4 h por dia, 6 dias, tudo em nível médio). Informe horas, data da colação e seu nível em cada disciplina.</span><div class="row" style="margin-top:8px"><button class="btn sm primary" data-act="go" data-arg="ajustes">Configurar agora</button></div></div></div>`:''}
   ${alerts()}
   <section class="panel"><div class="panel-head"><h2>Calendário</h2><span class="tiny faint">“prev.” = cronograma preliminar do contrato TJSC–FGV, sujeito a confirmação no edital</span></div>${rail()}</section>
@@ -2769,7 +2858,7 @@ V.grupo=function(){
   const sync=G.backend.kind==='local'?'só neste aparelho':G.backend.on?'sincronizado'+(G.backend.last?' às '+new Date(G.backend.last).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):''):'sem conexão agora';
   return `
   <header class="page-head"><div><div class="eyebrow">Grupo · ${ms.length} participante(s) · ${sync}</div><h1>Placar e feed</h1><p>Cada registro de estudo vira um check-in aqui. Pontos premiam o que aprova — hora líquida, questão de prova, revisão em dia e simulado — e qualquer um pode abrir o progresso completo do outro clicando no nome.</p></div>
-    <div class="row"><button class="btn" data-act="grupo-atualizar">Atualizar</button><button class="btn primary" data-act="log" data-arg="|0">Fazer check-in</button></div></header>
+    <div class="row"><button class="btn" data-act="grupo-atualizar">Atualizar</button><button class="btn primary" data-act="log" data-arg="|0">Registrar estudo</button></div></header>
   ${G.backend.kind==='local'&&!window.claude?G.conexaoHtml():''}
   <div class="cols wide-left">
     <section class="panel"><div class="panel-head"><h2>Placar · ${esc(per.nome)}</h2><div class="seg" role="group" aria-label="Período">${[['semana','Semana'],['mes','Mês'],['temporada','Temporada']].map(([k,l])=>`<button data-act="grupo-periodo" data-arg="${k}" aria-pressed="${ui.periodo===k}">${l}</button>`).join('')}</div></div>
@@ -2944,9 +3033,11 @@ V.ritmo=function(){
         <div class="acts small num" style="text-align:right">${n1(f.custo)} h<br><span class="faint">+${f.ganho.toFixed(2)} acerto</span></div></div>`;
     }).join('') : '<p class="small muted">Nada na fila: todos os macro-temas já estão no degrau máximo.</p>';
 
+  const conflitos=G.niveisEmConflito();
+  const NIVN=['','Fraco','Médio','Forte'];
   const linhas=T.slice().sort((a,b)=>b.q-a.q).map(x=>{
     const st=G.temaSt(x.k), fech=G.temaFechado(x.k), orc=G.temaCusto(x.k,st.g), falta=G.temaFalta(x.k);
-    const trava=(x.t==='A'||x.t==='B');
+    const trava=(x.t==='A'||x.t==='B'), med=G.nivelMedido(x.k);
     const portao=st.q>=10?`${st.ok}/${st.q} · ${Math.round(st.ok/st.q*100)}%`:(st.q?`${st.ok}/${st.q}`:'—');
     return `<tr${fech?' style="opacity:.6"':''}>
       <td>${esc(x.m)}<div class="tiny faint">${esc(x.d)} · ${esc(x.f)}${trava?' · faixa '+x.t+', obrigatória':''}</div></td>
@@ -2955,7 +3046,8 @@ V.ritmo=function(){
       <td class="n">${n1(st.h)}${st.g?' / '+n1(orc):''}</td>
       <td class="n">${st.g?(fech?'<span class="pill good">fechado</span>':n1(falta)+' h'):'—'}</td>
       <td class="n small">${portao}</td>
-      <td><div class="tg">${[[1,'F'],[2,'M'],[3,'✓']].map(([v,l])=>`<button data-act="tema-nivel" data-arg="${esc(x.k)}|${v}" aria-pressed="${st.n===v}" data-tip="${v===1?'Fraco: orça 30% mais':v===2?'Médio: orçamento cheio':'Forte: orça metade'}">${l}</button>`).join('')}</div></td>
+      <td><div class="tg">${[[1,'F'],[2,'M'],[3,'✓']].map(([v,l])=>`<button data-act="tema-nivel" data-arg="${esc(x.k)}|${v}" aria-pressed="${st.n===v}" data-tip="${v===1?'Fraco: orça 30% mais':v===2?'Médio: orçamento cheio':'Forte: orça metade'}">${l}</button>`).join('')}</div>
+        ${med?(med.n===st.n?`<div class="tiny faint">medido confere</div>`:`<div class="tiny" style="color:var(--accent)">medido: ${NIVN[med.n]}</div>`):'<div class="tiny faint">sem medição</div>'}</td>
     </tr>`}).join('');
 
   return `<header class="page-head"><div>
@@ -3004,6 +3096,12 @@ V.ritmo=function(){
     <div class="pauta">${tirar.slice(0,8).map((c,i)=>`<div class="pi"><div class="n">${i+1}</div>
       <div><div class="t">${esc(c.tema.m)}</div><div class="s">${esc(c.tema.d)} · volta para ${G.DEG[c.para]}</div></div>
       <div class="acts small num" style="text-align:right">devolve ${n1(c.custo)} h<br><span class="faint">−${c.perda.toFixed(2)} acerto</span></div></div>`).join('')}</div></section>`:''}
+
+  ${conflitos.length?`<section class="panel"><div class="panel-head"><h2>O nível declarado não bate com o medido</h2><span class="small muted">${conflitos.length} tema${conflitos.length>1?'s':''}</span></div>
+    <p class="small muted">O nível é um palpite de vocês e ele <b>escala as horas</b> — Forte orça metade. Quando há pelo menos ${G.MINQ} questões lançadas no tema, o acerto real manda mais que o palpite.</p>
+    <div class="pauta">${conflitos.slice(0,10).map((c,i)=>`<div class="pi"><div class="n">${i+1}</div>
+      <div><div class="t">${esc(c.tema.m)}</div><div class="s">${esc(c.tema.d)} · declarado <b>${NIVN[c.declarado]}</b>, medido <b>${NIVN[c.medido]}</b> — ${Math.round(c.p*100)}% em ${c.q} questões</div></div>
+      <div class="acts"><button class="btn sm" data-act="tema-nivel" data-arg="${esc(c.tema.k)}|${c.medido}">Usar o medido</button></div></div>`).join('')}</div></section>`:''}
 
   <section class="panel">
     <div class="panel-head"><h2>Os ${T.length} macro-temas</h2><span class="small muted">marque Fraco, Médio ou Forte — isso reorça as horas na hora</span></div>
@@ -3205,7 +3303,8 @@ function openLog(o){
     <div class="field"><label for="lg-ok">Acertos</label><input type="number" id="lg-ok" name="ok" min="0" max="500" value="0"></div></div>
     <div class="field"><label for="lg-tema">Macro-tema</label><select id="lg-tema" name="tema">${temaOpts(o.disc)}</select>
       <span class="tiny faint">As horas e o placar 8-em-10 do portão só contam se o tema for escolhido aqui.</span></div>
-    <div class="field"><label for="lg-nota">O que estudou (opcional)</label><input type="text" id="lg-nota" name="nota" maxlength="160" placeholder="ex.: recursos — agravo de instrumento, 20 questões FGV"></div>`,
+    <div class="field"><label for="lg-nota">O que estudou (opcional)</label><input type="text" id="lg-nota" name="nota" maxlength="160" placeholder="ex.: recursos — agravo de instrumento, 20 questões FGV"></div>
+    <p class="tiny faint">Um registro só alimenta tudo: a pauta de Hoje, o placar e o feed do Grupo, a projeção em Desempenho e o banco de horas em Ritmo. Não precisa repetir em cada aba.</p>`,
     fd=>{ if(+fd.ok>+fd.q) throw new Error('Acertos não podem superar as questões feitas');
       const antes=fd.tema?G.temaFechado(fd.tema):false;
       G.addSession({disc:fd.disc,tipo:fd.tipo,d:fd.d||G.today(),min:fd.min,q:fd.q,ok:fd.ok,nota:fd.nota,tema:fd.tema||'',ciclo:!!o.ciclo&&(fd.d||G.today())===G.today()});
@@ -3258,7 +3357,18 @@ const A={
   'err-toggle'(id){const e=S.erros.find(x=>x.id===id);if(e){e.ok=!e.ok;G.touch('erros');render()}},
   'err-del'(id){S.erros=S.erros.filter(x=>x.id!==id);G.touch('erros');render()},
   'sim-add'(tipo){
-    if(tipo==='enam'){dlg('Registrar simulado do ENAM',`<div class="form-grid"><div class="field"><label for="se-n">Qual prova</label><input type="text" id="se-n" name="nome" required maxlength="80" placeholder="ex.: ENAM 2026.1 (prova real)"></div><div class="field"><label for="se-d">Data</label><input type="date" id="se-d" name="d" value="${G.today()}"></div><div class="field"><label for="se-t">Acertos (0–80)</label><input type="number" id="se-t" name="total" min="0" max="80" required></div></div><p class="small muted">Depois, lance também os acertos por disciplina em “Registrar estudo” (atividade Simulado): é isso que alimenta a projeção e o diagnóstico.</p>`,fd=>{S.simulados.push({id:G.uid(),tipo:'enam',d:fd.d||G.today(),nome:fd.nome.trim(),total:Math.min(80,+fd.total||0)});G.touch('simulados')});return}
+    if(tipo==='enam'){
+      const q8=DISC.filter(d=>d.enam);
+      dlg('Registrar simulado do ENAM',`<div class="form-grid"><div class="field"><label for="se-n">Qual prova</label><input type="text" id="se-n" name="nome" required maxlength="80" placeholder="ex.: ENAM 2026.1 (prova real)"></div>
+        <div class="field"><label for="se-d">Data</label><input type="date" id="se-d" name="d" value="${G.today()}" max="${G.today()}"></div>
+        <div class="field"><label for="se-min">Minutos gastos</label><input type="number" id="se-min" name="min" min="0" max="600" value="300"></div></div>
+        <div class="field"><span class="lbl">Acertos por disciplina</span>
+          <div class="form-grid">${q8.map(d=>`<div class="field"><label for="se-${d.id}">${esc(d.short)} <span class="faint num">/${d.enam}</span></label><input type="number" id="se-${d.id}" name="d_${d.id}" min="0" max="${d.enam}" value="0"></div>`).join('')}</div></div>
+        <p class="small muted">O total sai da soma, e os acertos já entram na projeção e no diagnóstico. <b>Não precisa lançar de novo em “Registrar estudo”.</b></p>`,
+        fd=>{ const porDisc={}; q8.forEach(d=>{porDisc[d.id]=+fd['d_'+d.id]||0});
+          const r=G.addSimuladoEnam({nome:fd.nome.trim(),d:fd.d||G.today(),min:fd.min,porDisc});
+          G.toast(`Simulado lançado: ${r.total}/80 — já entrou no Desempenho e no Grupo`); });
+      return}
     dlg('Registrar simulado do TJSC',`<div class="form-grid"><div class="field"><label for="sm-n">Nome</label><input type="text" id="sm-n" name="nome" required maxlength="80" placeholder="ex.: TJSC 2024 (prova real)"></div><div class="field"><label for="sm-d">Data</label><input type="date" id="sm-d" name="d" value="${G.today()}"></div></div><div class="form-grid"><div class="field"><label for="sm-1">Acertos Bloco I (0–40)</label><input type="number" id="sm-1" name="b1" min="0" max="40" required></div><div class="field"><label for="sm-2">Bloco II (0–30)</label><input type="number" id="sm-2" name="b2" min="0" max="30" required></div><div class="field"><label for="sm-3">Bloco III (0–30)</label><input type="number" id="sm-3" name="b3" min="0" max="30" required></div></div>`,fd=>{S.simulados.push({id:G.uid(),tipo:'tjsc',d:fd.d||G.today(),nome:fd.nome.trim(),b1:Math.min(40,+fd.b1||0),b2:Math.min(30,+fd.b2||0),b3:Math.min(30,+fd.b3||0)});G.touch('simulados')})},
   'sim-del'(id){const pr=id.indexOf('prova:')===0&&F.PROVAS_REAIS.find(p=>'prova:'+p.id===id);
     if(pr){dlg('Excluir o resultado de '+esc(pr.nome)+'?','<p>Esse simulado veio da folha de respostas. Excluir apaga também as marcações e o resultado da prova.</p>',()=>{G.refazerProva(pr)},'Excluir');return}
