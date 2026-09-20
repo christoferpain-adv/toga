@@ -1932,7 +1932,7 @@ G.pid = ()=>pid;
 G.perfil = ()=>G.member(pid);
 const lsKey = p=>'gabinete-msc-v2:'+p;
 const defaults = p=>({
-  cfg:Object.assign({nome:(members[p]||{}).nome||'',enam:'nao',horas:4,dias:6,meta:80,metaQ:100,niveis:{},onboarded:false,colacao:'',aj:'parcial'},clone((SEEDS.find(x=>x.id===p)||{}).cfg||{})),
+  cfg:Object.assign({nome:(members[p]||{}).nome||'',enam:'nao',horas:4,dias:6,meta:80,metaQ:100,niveis:{},onboarded:false,colacao:'',aj:'parcial',inicio:'2026-09-21'},clone((SEEDS.find(x=>x.id===p)||{}).cfg||{})),
   edital:{}, sessoes:[], revisoes:[], erros:[], simulados:[], ciclo:{seq:[],pos:0,sig:''}, provas:{}, temas:{}
 });
 const S = G.S = defaults(pid);
@@ -2295,9 +2295,13 @@ G.ritmo=function(){
   const obs=janela?min/60/janela:0, peso=Math.min(1,janela/7), decl=S.cfg.horas||4;
   return {hDia:obs*peso+decl*(1-peso), obs, janela, diasComRegistro:Object.keys(vistos).length, declarado:decl, maduro:janela>=7};
 };
+/* o ciclo começa em cfg.inicio: dias antes disso não entram na capacidade */
+G.inicioCiclo=()=>S.cfg.inicio||today();
+G.antesDoInicio=()=>diff(G.inicioCiclo(),today())>0;
 G.orcamento=function(){
   const f=G.phase(), t=today(), r=G.ritmo();
-  const dias=Math.max(0,diff(f.ate,t)+1);
+  const base=G.antesDoInicio()?G.inicioCiclo():t;
+  const dias=Math.max(0,diff(f.ate,base)+1);
   const capacidade=r.hDia*dias, util=capacidade*(1-RESERVA);
   let demanda=0, gastas=0, ativos=0;
   TEMAS.forEach(x=>{const st=G.temaSt(x.k); gastas+=st.h; if(st.g>0)ativos++; demanda+=G.temaFalta(x.k)});
@@ -2652,6 +2656,7 @@ V.hoje=function(){
   <div class="cols wide-left">
     <div class="stack">
       <section class="panel"><div class="panel-head"><h2>Blocos de hoje</h2><span class="small muted">${S.cfg.horas} blocos de ~50 min + 10 de pausa</span></div>
+        ${G.antesDoInicio()?`<div class="alert calm"><span class="mark" style="background:var(--ink-3)">${G.diff(G.inicioCiclo(),G.today())}d</span><div><b>O ciclo começa em ${G.fmt(G.inicioCiclo())}</b><span class="small">Hoje não conta na capacidade. A pauta abaixo é a do primeiro dia — se quiser adiantar, os blocos registrados entram normalmente.</span></div></div>`:''}
         <div class="pauta">${doneHtml+nextHtml||'<p class="muted">Pauta cumprida. Se sobrar fôlego, adiante revisões ou faça questões da disciplina mais fraca.</p>'}</div>
         <div class="row"><button class="btn sm ghost" data-act="cycle-skip">Pular próximo bloco</button><button class="btn sm ghost" data-act="go" data-arg="plano">Ver ciclo completo</button></div>
       </section>
