@@ -11,9 +11,18 @@
 </head>
 <body>
 <title>Gabinete Magistratura SC</title>
+<script>
+/* tema: aplicado antes da primeira pintura. Fora do Claude o padrão é claro; dentro dele, segue o tema do próprio Claude. */
+(function(){var t;try{t=localStorage.getItem('gabinete-tema')}catch(e){}
+  if(!t) t=window.claude?'auto':'claro';
+  if(t==='claro') document.documentElement.setAttribute('data-theme','light');
+  else if(t==='escuro') document.documentElement.setAttribute('data-theme','dark');
+  window.GAB_TEMA=t;})();
+</script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Literata:opsz,wght@7..72,500;7..72,600&display=swap">
 <style>
 :root{
+  color-scheme:light;
   --bg:#F2F5F3; --surface:#FFFFFF; --surface-2:#E8EEEA; --ink:#13201A; --ink-2:#4C5F56; --ink-3:#74857C; --line:#D5DDD8;
   --primary:#1D5C47; --primary-ink:#FFFFFF; --primary-soft:#DCEBE4;
   --accent:#B4281F; --accent-soft:#F8E3E0;
@@ -28,7 +37,7 @@
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --bg:#0E1512; --surface:#16201B; --surface-2:#1E2B25; --ink:#E7EEEA; --ink-2:#B3C2BA; --ink-3:#82938A; --line:#2A3831;
+    color-scheme:dark; --bg:#0E1512; --surface:#16201B; --surface-2:#1E2B25; --ink:#E7EEEA; --ink-2:#B3C2BA; --ink-3:#82938A; --line:#2A3831;
     --primary:#63C3A0; --primary-ink:#0B1712; --primary-soft:#1B382E;
     --accent:#FF8A7E; --accent-soft:#3B201D;
     --gold:#E2B45C; --gold-soft:#372D17;
@@ -39,7 +48,7 @@
   }
 }
 :root[data-theme="dark"]{
-  --bg:#0E1512; --surface:#16201B; --surface-2:#1E2B25; --ink:#E7EEEA; --ink-2:#B3C2BA; --ink-3:#82938A; --line:#2A3831;
+  color-scheme:dark; --bg:#0E1512; --surface:#16201B; --surface-2:#1E2B25; --ink:#E7EEEA; --ink-2:#B3C2BA; --ink-3:#82938A; --line:#2A3831;
   --primary:#63C3A0; --primary-ink:#0B1712; --primary-soft:#1B382E;
   --accent:#FF8A7E; --accent-soft:#3B201D;
   --gold:#E2B45C; --gold-soft:#372D17;
@@ -270,6 +279,7 @@ dialog::backdrop{background:rgba(10,18,14,.55)}
     <div class="brand"><b>Gabinete</b><span>Magistratura SC</span></div>
     <nav class="nav" id="nav" aria-label="Seções"></nav>
     <div class="side-foot">
+      <button class="btn sm ghost" id="tema-btn" data-act="tema-alternar" style="justify-content:flex-start;padding-left:0">Tema</button>
       <div class="sync" id="sync" data-s="local"><i></i><span>Salvando neste navegador</span></div>
       <div class="tiny faint" id="foot-note">Provas FGV mapeadas: TJSC 2022–2025 e ENAM 2024–2026</div>
     </div>
@@ -2470,6 +2480,8 @@ V.ajustes=function(){
     <section class="panel"><h2>Seu nível em cada disciplina</h2><p class="small muted">Seja severo: “Forte” é acertar 80%+ em questões de magistratura. O ciclo dá 40% mais blocos ao que for “Fraco” e 30% menos ao que for “Forte”.</p>
       <div>${DISC.map(d=>`<div class="lvl"><span>${dot(d.bloco)} ${esc(d.nome)}</span><div class="seg">${[[1,'Fraco'],[2,'Médio'],[3,'Forte']].map(([v,l])=>`<button data-act="nivel" data-arg="${d.id}|${v}" aria-pressed="${(c.niveis[d.id]||2)===v}">${l}</button>`).join('')}</div></div>`).join('')}</div></section>
   </div>
+  <section class="panel"><h2>Aparência</h2><p class="small muted">Claro e escuro têm o mesmo conteúdo; muda só a cor. “Automático” acompanha o modo claro/escuro do seu sistema${window.claude?' ou o tema do próprio Claude':''}.</p>
+    <div class="seg" role="group" aria-label="Tema">${[['claro','Claro'],['escuro','Escuro'],['auto','Automático']].map(([k,l])=>`<button data-act="tema" data-arg="${k}" aria-pressed="${G.tema()===k}">${l}</button>`).join('')}</div></section>
   ${G.conexaoHtml()}
   <section class="panel"><h2>Backup</h2><p class="small muted">O arquivo de backup leva tudo: perfil, edital marcado, registros, revisões, erros e simulados. Serve também para migrar entre a versão local e a publicada.</p>
     <div class="row"><button class="btn" data-act="export">Exportar backup</button><button class="btn" data-act="import">Importar backup</button><button class="btn danger" data-act="reset">Apagar tudo</button></div></section>`;
@@ -2482,7 +2494,17 @@ function renderNav(){
   const due=G.dueReviews().length;
   $('#nav').innerHTML=`<button class="who" data-act="perfil-trocar" data-tip="Trocar de perfil"><span><b>${esc(p.nome)}</b></span><span class="tiny faint">trocar</span></button>`+ROUTES.map(([k,l])=>`<button data-act="go" data-arg="${k}" ${ui.route===k?'aria-current="page"':''}><span>${l}</span>${k==='revisoes'&&due?`<span class="count">${due}</span>`:''}</button>`).join('');
 }
+/* tema: claro | escuro | auto (segue o sistema ou, dentro do Claude, o tema do Claude) */
+const TEMAS={claro:'Tema claro',escuro:'Tema escuro',auto:'Tema automático'};
+G.tema=()=>TEMAS[window.GAB_TEMA]?window.GAB_TEMA:'auto';
+G.setTema=function(t){
+  if(!TEMAS[t]) t='auto'; window.GAB_TEMA=t; try{localStorage.setItem('gabinete-tema',t)}catch(e){}
+  const r=document.documentElement; if(t==='claro') r.setAttribute('data-theme','light'); else if(t==='escuro') r.setAttribute('data-theme','dark'); else r.removeAttribute('data-theme');
+  renderTema();
+};
+function renderTema(){const b=$('#tema-btn'); if(b){b.textContent=TEMAS[G.tema()]+' · trocar'}}
 function render(){
+  renderTema();
   if(!G.pid()){$('#view').innerHTML=V.perfis(); renderNav(); $('#timerbar').hidden=true; return}
   $('#view').innerHTML=(V[ui.route]||V.hoje)(); renderNav(); renderTimer();
   try{localStorage.setItem('gabinete-rota',ui.route)}catch(e){}
@@ -2520,6 +2542,8 @@ setInterval(()=>{const c=$('#clock'); if(c&&ui.timer&&ui.timer.running) c.textCo
 /* ---------- ações ---------- */
 const A={
   go(a){ui.route=a;render();window.scrollTo(0,0)},
+  tema(t){G.setTema(t);render()},
+  'tema-alternar'(){const o=['claro','escuro','auto']; G.setTema(o[(o.indexOf(G.tema())+1)%3]); if(ui.route==='ajustes'&&G.pid()) render(); G.toast(TEMAS[G.tema()])},
   perfil(p){G.switchProfile(p);window.scrollTo(0,0)},
   'perfil-trocar'(){G.switchProfile(null);window.scrollTo(0,0)},
   'aj-info'(){dlg('Três anos de atividade jurídica',`<p class="small muted">${esc(F.AJ.quando)}</p><div><div class="eyebrow" style="margin-bottom:4px">Conta</div><ul class="small" style="margin:0;padding-left:1.1rem">${F.AJ.conta.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div><div><div class="eyebrow" style="margin-bottom:4px">Não conta</div><ul class="small" style="margin:0;padding-left:1.1rem">${F.AJ.naoConta.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div><p class="tiny faint">Fonte: Edital TJSC 11/2025 (itens 9.21 e 16.3) e Res. CNJ 75/2009. Guarde desde já as provas de cada ano: certidões de atuação, petições protocoladas, portarias.</p>`,()=>true,'Entendi')},
