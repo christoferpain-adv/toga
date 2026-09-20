@@ -2257,6 +2257,12 @@ const TEMA_DISC={cst:'Constitucional',tri:'Constitucional',tra:'Constitucional',
   pc:'Processo Civil',civ:'Civil',lce:'Civil',con:'Civil',pen:'Penal',lpe:'Penal',
   adm:'Administrativo',emp:'Empresarial',dh:'Direitos Humanos',eca:'Direitos Humanos',hum:'Humanística'};
 G.temaDisc=id=>TEMA_DISC[id]||null;
+/* de qual cota da prova cada disciplina da plataforma tira ponto. Const. Tributário,
+   Const. do Trabalho e Processo Penal não têm cota própria: caem dentro de Constitucional.
+   Sem isto, questão lançada nelas não mexe na projeção de nota. */
+const NOME_QUOTA={}; DISC.forEach(d=>{if(d.enam&&TEMA_DISC[d.id]) NOME_QUOTA[TEMA_DISC[d.id]]=d.id});
+const QUOTA_DE={}; Object.keys(TEMA_DISC).forEach(p=>{const q=NOME_QUOTA[TEMA_DISC[p]]; if(q) QUOTA_DE[p]=q});
+G.quotaDe=id=>QUOTA_DE[id]||null;
 
 G.temaSt=function(k){
   if(!S.temas) S.temas={};
@@ -2407,9 +2413,18 @@ G.projection = function(){
     if(x.q>=G.MINQ) b.proj+=e*x.ok/x.q; else {b.proj+=e*0.5; b.semDados+=e}});
   return {blocos,total:blocos[1].proj+blocos[2].proj+blocos[3].proj,semDados:blocos[1].semDados+blocos[2].semDados+blocos[3].semDados};
 };
+/* acerto por cota da prova: junta cada disciplina da plataforma na cota de onde ela tira ponto */
+G.accEnam = function(st){
+  const raw=G.accByDisc(st), a={};
+  DISC.filter(d=>d.enam).forEach(d=>a[d.id]={q:0,ok:0,vindas:[]});
+  Object.keys(raw).forEach(p=>{const q=QUOTA_DE[p]; if(!q||!a[q]) return;
+    a[q].q+=raw[p].q; a[q].ok+=raw[p].ok;
+    if(p!==q&&raw[p].q) a[q].vindas.push((byId[p]||{}).short||p)});
+  return a;
+};
 G.projectionEnam = function(st){
-  const acc=G.accByDisc(st); let total=0, semDados=0; const linhas=[];
-  DISC.filter(d=>d.enam).forEach(d=>{const x=acc[d.id], tem=x.q>=G.MINQ, p=tem?x.ok/x.q:0.5; total+=d.enam*p; if(!tem) semDados+=d.enam; linhas.push({d,p,tem,pts:d.enam*p})});
+  const acc=G.accEnam(st); let total=0, semDados=0; const linhas=[];
+  DISC.filter(d=>d.enam).forEach(d=>{const x=acc[d.id], tem=x.q>=G.MINQ, p=tem?x.ok/x.q:0.5; total+=d.enam*p; if(!tem) semDados+=d.enam; linhas.push({d,p,tem,pts:d.enam*p,q:x.q,vindas:x.vindas})});
   return {total,semDados,linhas};
 };
 G.summary = function(st){
@@ -2903,7 +2918,7 @@ const n0=x=>Math.round(x);
 const DEGP=['<span class="pill info">fora</span>','<span class="pill warn">reconhecimento</span>','<span class="pill warn">meia</span>','<span class="pill good">a fundo</span>'];
 
 V.ritmo=function(){
-  const o=G.orcamento(), p=G.projTemas(), fila=G.fila(), tirar=G.recolher(false);
+  const o=G.orcamento(), p=G.projTemas(), fila=G.fila(), tirar=G.recolher(false), medida=G.projectionEnam();
   const T=G.TEMAS||[];
   const porDeg=[0,0,0,0]; T.forEach(x=>porDeg[G.temaSt(x.k).g]++);
   const fechados=T.filter(x=>G.temaFechado(x.k)).length;
@@ -2958,9 +2973,13 @@ V.ritmo=function(){
     <div class="stat"><span class="v num">${o.dias}</span><span class="l">dias até ${G.fmtShort(o.ate)}</span><span class="d">${n0(o.capacidade)} h de capacidade</span></div>
     <div class="stat"><span class="v num">${n0(o.demanda)}</span><span class="l">horas de demanda</span><span class="d">${o.ativos} temas assumidos</span></div>
     <div class="stat"><span class="v num" style="color:${o.folga<0?'var(--accent)':'var(--primary)'}">${o.folga>=0?'+':''}${n0(o.folga)}</span><span class="l">horas de folga</span><span class="d">já fora a reserva de ${n0(o.reserva)} h</span></div>
-    <div class="stat"><span class="v num">${n1(p.acertos)}</span><span class="l">acertos projetados</span><span class="d">habilita com 56 · meta 62</span></div>
+    <div class="stat"><span class="v num">${n1(p.acertos)}</span><span class="l">acertos se o plano funcionar</span><span class="d">modelo, não medição · habilita com 56</span></div>
     <div class="stat"><span class="v num">${n0(p.cobertura)}%</span><span class="l">da prova coberta</span><span class="d">${fechados} temas fechados no portão</span></div>
   </div>
+
+  <div class="alert calm"><span class="mark" style="background:var(--ink-3)">≠</span><div>
+    <b>São duas estimativas diferentes, e elas vão divergir</b>
+    <p class="small">Os <strong class="num">${n1(p.acertos)}</strong> acima saem do <i>modelo</i>: cada degrau vale um acerto presumido — 20% no chute, 40% no reconhecimento, 65% na meia, 88% a fundo. A aba <strong>Desempenho</strong> traz a outra, de <strong class="num">${n1(medida.total)}</strong>, que usa o <i>seu</i> acerto real nas questões lançadas${medida.semDados>1?` — ainda com ${n0(medida.semDados)} questões da prova sem dado seu, presumidas em 50%`:''}. A primeira responde “o plano dá conta?”; a segunda, “no meu acerto de hoje, quanto eu faria?”. Quando as duas se aproximarem, o modelo está calibrado.</p></div></div>
 
   <section class="panel">
     <div class="panel-head"><h2>Onde a capacidade está</h2><span class="small muted num">${n0(o.util)} h úteis + ${n0(o.reserva)} h de reserva</span></div>
@@ -3016,7 +3035,7 @@ V.desempenho=function(){
   const fracas=DISC.filter(d=>acc[d.id].q>=10).sort((a,b)=>acc[a.id].ok/acc[a.id].q-acc[b.id].ok/acc[b.id].q).slice(0,3);
   const pe=G.projectionEnam(), E=F.ENAM;
   const enamPanel=`<section class="panel"><div class="panel-head"><h2>Projeção de nota no ENAM</h2>${pe.semDados>1?`<span class="pill warn">${pe.semDados} questões sem dados seus</span>`:`<span class="pill ${pe.total>=62?'good':pe.total>=E.minimo?'warn':'crit'}">${pe.total>=62?'com folga':pe.total>=E.minimo?'no limite':'abaixo de 56'}</span>`}</div>
-      <div class="bars">${pe.linhas.map(l=>bar(dot(l.d.bloco)+' '+esc(l.d.short),l.pts,16,'b'+l.d.bloco,l.tem?l.pts.toFixed(1)+'/'+l.d.enam:'<span class="faint">?/'+l.d.enam+'</span>',l.d.nome+': '+(l.tem?Math.round(l.p*100)+'% de acerto × '+l.d.enam+' questões':'menos de 6 questões registradas — presumido 50%'),l.d.enam)).join('')}${bar('<b>Total</b>',pe.total,80,'',pe.total.toFixed(1)+'/80','Projeção total no ENAM · habilita com 56',E.minimo)}</div>
+      <div class="bars">${pe.linhas.map(l=>bar(dot(l.d.bloco)+' '+esc(l.d.short),l.pts,16,'b'+l.d.bloco,l.tem?l.pts.toFixed(1)+'/'+l.d.enam:'<span class="faint">?/'+l.d.enam+'</span>',l.d.nome+': '+(l.tem?Math.round(l.p*100)+'% de acerto em '+l.q+' questões × '+l.d.enam+' da prova':'menos de 6 questões registradas — presumido 50%')+(l.vindas&&l.vindas.length?' · inclui '+l.vindas.join(', ')+', que cai dentro desta cota':''),l.d.enam)).join('')}${bar('<b>Total</b>',pe.total,80,'',pe.total.toFixed(1)+'/80','Projeção total no ENAM · habilita com 56',E.minimo)}</div>
       <span class="tiny faint">Traço = teto de cada disciplina; no total, o traço é o mínimo de 56 acertos. Mire 62 ou mais: a dificuldade varia muito entre edições.</span></section>`;
   const sims=S.simulados.slice().sort((a,b)=>a.d<b.d?1:-1);
   const simRow=s=>{const en=s.tipo==='enam', t=en?s.total:s.b1+s.b2+s.b3, ok=en?t>=E.minimo:(s.b1>=12&&s.b2>=9&&s.b3>=9&&t>=60);
