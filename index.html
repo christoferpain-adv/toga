@@ -250,6 +250,19 @@ dialog::backdrop{background:rgba(10,18,14,.55)}
 .career h3{font-family:var(--f-display);font-size:1.08rem}
 .kv{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 14px;font-size:.88rem}
 .kv dt{color:var(--ink-3)} .kv dd{margin:0}
+/* ---------- folha de respostas ---------- */
+a.btn{text-decoration:none;color:var(--ink)} a.btn.primary{color:var(--primary-ink)}
+.sheet{columns:2 300px;column-gap:32px}
+.fr{display:grid;grid-template-columns:34px repeat(5,38px) minmax(0,1fr);gap:6px;align-items:center;padding:3px 0;break-inside:avoid}
+.fr .qn{font:500 .85rem var(--f-mono);font-variant-numeric:tabular-nums;color:var(--ink-3);text-align:right;padding-right:4px}
+.fr button{height:34px;border-radius:7px;border:1px solid var(--line);background:var(--surface);cursor:pointer;font:600 .85rem var(--f-mono);color:var(--ink-2)}
+.fr button:hover:not(:disabled){border-color:var(--ink-3)}
+.fr button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.fr button:disabled{cursor:default}
+.fr button.k{border-color:var(--good);box-shadow:inset 0 0 0 1px var(--good);color:var(--good-text)}
+.fr button.c[aria-pressed="true"]{background:var(--good);border-color:var(--good);color:#fff}
+.fr button.x[aria-pressed="true"]{background:var(--crit);border-color:var(--crit);color:#fff}
+.fr .st{font-size:.76rem;color:var(--ink-3)}
 /* ---------- grupo ---------- */
 .avatar{width:34px;height:34px;border-radius:50%;display:inline-grid;place-items:center;font:600 .82rem var(--f-ui);background:var(--primary-soft);color:var(--primary);flex:none}
 .linkbtn{border:0;background:none;padding:0;color:var(--ink);cursor:pointer;font-weight:600;text-decoration:underline;text-decoration-color:var(--ink-3);text-underline-offset:3px}
@@ -1310,6 +1323,19 @@ dialog::backdrop{background:rgba(10,18,14,.55)}
 ]}
 
 </script>
+<script type="application/json" id="d-gabaritos">
+{
+  "tjsc-2022": "EEADDAEEEDCCDBDABBDEDCACECEADBBBACBCDBEECCCEAAACDEEADDBEEAXDECEBDDECXEDABAAEADDBEDEACAACBDDBBCCDBAAC",
+  "tjsc-2025": "EADCCDCEDCAECCBDEDACBADEEAEBABDADBDXDCBBDAADBBEDABEBACBEEDDEBEBCBDDDBDAACCDDAADEDCBBCEAEEDXBAAECEBCE",
+  "tjsc-2024": "ECDDACDDCECADEAEACBEEDBABECDDBDAADDBXDCEAACAABBECCACXDABEBABAAEDBAEDCDAEABCDCDDADBDDEBEEBEDACDXBBADC",
+  "enam-2024.1": "CBDBCEDECBCBBDEADCCDCBDEEABADACEBEEDDAAACADBBEECBCEEECDBAADDBABEAXEACDAEBXDDCCAA",
+  "enam-2024.2": "ACADCBACDEACCBEDDAEBBCDAXDEACBDECCAECEDCBADDDBBEAEABEBDAABAEDXBECDCDEBAECBBAEBEC",
+  "enam-2025.1": "ACBEDBCBCACBCDABAACBDBCEADBBABBADXBDDDCECEEDAEBCEDACADCCAEBDEABADACEAEDAEBEBCCBD",
+  "enam-2025.2": "DBEBDACBCBDEDABBEEABEAEBCECXAEDDCCACCEECDDAEAADDABDDABEDCACBBECECBAAEBBCDAECDCDA",
+  "enam-2026.1": "BDCEABECEDBDEDEDABAEECBCBEEDBCCADEBDBCAEAXCDCBCEEAECCEDEEEACBEDEDDDAAADABCCCCCAA"
+}
+
+</script>
 <script>
 /* ===================== Gabinete · base de fatos (levantamento de 19/09/2026) =====================
    Tudo aqui veio de editais e PDFs oficiais (FGV, TJSC, MPSC, CNJ) ou de fontes secundárias indicadas.
@@ -1457,6 +1483,25 @@ window.GAB_FACTS = {
     ['Gabarito 2024.1','https://conhecimento.fgv.br/sites/default/files/concursos/enam2024_gabarito_definitivo_aposanulacao.pdf'],
     ['ENFAM · ENAM','https://www.enfam.jus.br/enam/normativos/']
   ],
+  /* provas reais com folha de respostas: sempre o caderno TIPO 1 (é o que foi mapeado e o que o gabarito embutido corrige) */
+  PROVAS_REAIS:[
+    {id:'enam-2026.1',fam:'enam',ano:'2026.1',nome:'ENAM 2026.1',data:'07/06/2026',nota:'Melhor retrato da prova de 29/11: o conteúdo do edital 2026.2 é idêntico. Ideal para o diagnóstico da primeira semana.',
+     pdf:'https://conhecimento.fgv.br/sites/default/files/concursos/magistratura-cns001-tipo-1.pdf',gab:'https://conhecimento.fgv.br/sites/default/files/concursos/enam-exame-nacional-de-magistratura-2026.1.pdf'},
+    {id:'enam-2025.2',fam:'enam',ano:'2025.2',nome:'ENAM 2025.2',data:'26/10/2025',nota:'A edição mais difícil: cerca de 6% de habilitados. Guarde para quando a base estiver revisada.',
+     pdf:'https://conhecimento.fgv.br/sites/default/files/concursos/magistraturacns001-tipo-1_3.pdf',gab:'https://conhecimento.fgv.br/sites/default/files/concursos/gabarito-definitivo-v2.pdf'},
+    {id:'enam-2025.1',fam:'enam',ano:'2025.1',nome:'ENAM 2025.1',data:'18/05/2025',nota:'18% de habilitados.',
+     pdf:'https://conhecimento.fgv.br/sites/default/files/concursos/magistraturacns001-tipo-1_2.pdf',gab:'https://conhecimento.fgv.br/sites/default/files/concursos/gabarito-definitivo-enam-2025.1_v2.pdf'},
+    {id:'enam-2024.2',fam:'enam',ano:'2024.2',nome:'ENAM 2024.2',data:'20/10/2024',nota:'21% de habilitados.',
+     pdf:'https://conhecimento.fgv.br/sites/default/files/concursos/magistraturacns001-tipo-1_1.pdf',gab:'https://conhecimento.fgv.br/sites/default/files/concursos/enam202402_recursos_gabarito_definitivo_0.pdf'},
+    {id:'enam-2024.1',fam:'enam',ano:'2024.1',nome:'ENAM 2024.1',data:'14/04/2024',nota:'A primeira edição: 23% de habilitados.',
+     pdf:'https://conhecimento.fgv.br/sites/default/files/concursos/magistraturacns001-tipo-1.pdf',gab:'https://conhecimento.fgv.br/sites/default/files/concursos/enam2024_gabarito_definitivo_aposanulacao.pdf'},
+    {id:'tjsc-2025',fam:'tjsc',ano:'2025',nome:'TJSC · Juiz Substituto 2025',data:'27/04/2025',corte:68,nota:'Corte da ampla concorrência naquele ano: 68 acertos.',
+     pdf:'https://conhecimento.fgv.br/sites/default/files/concursos/juiz-substitutojuizsubstituto-tipo-1_0.pdf',gab:'https://conhecimento.fgv.br/sites/default/files/concursos/gabarito-definitivo-prova-objetiva-seletiva-ed.-11-2025-magistratura-tjsc.pdf'},
+    {id:'tjsc-2024',fam:'tjsc',ano:'2024',nome:'TJSC · Juiz Substituto 2024',data:'13/10/2024',corte:71,nota:'Corte da ampla concorrência naquele ano: 71 acertos.',
+     pdf:'https://conhecimento.fgv.br/sites/default/files/concursos/juiz-substitutojz-subst-tipo-1.pdf',gab:'https://conhecimento.fgv.br/sites/default/files/concursos/tjscjuizsub2024_gabarito_definitivov2.pdf'},
+    {id:'tjsc-2022',fam:'tjsc',ano:'2022',nome:'TJSC · Juiz Substituto 2022',data:'21/08/2022',corte:78,nota:'Corte da ampla concorrência naquele ano: 78 acertos.',
+     pdf:'https://conhecimento.fgv.br/sites/default/files/concursos/juiz_substituto_juz-sub_tipo_1.pdf',gab:'https://conhecimento.fgv.br/sites/default/files/concursos/tjsc2022juiz_gabarito_definitivo.pdf'}
+  ],
   CARREIRAS_INTRO:'Nenhum destes concursos está com inscrição aberta hoje. O que muda entre eles é quanto do seu estudo para juiz se aproveita, quando deve sair o próximo edital e se exigem o ENAM.',
   CARREIRAS:[
     {nome:'Juiz Substituto · TJSC',status:'edital previsto para 13/10/2026',statusTipo:'warn',
@@ -1547,7 +1592,8 @@ G.fmtShort = s=>{const d=pd(s);return pad(d.getDate())+'/'+pad(d.getMonth()+1)};
 const uid = G.uid = ()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const clone = o=>JSON.parse(JSON.stringify(o));
 const hash = s=>{let h=5381;for(let i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))>>>0;return h.toString(36)};
-const norm = G.norm = s=>String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+/* minúsculas sem acento; 768–879 são os códigos dos acentos combinantes (escrito sem escapes de propósito) */
+const norm = G.norm = s=>Array.from(String(s||'').toLowerCase().normalize('NFD')).filter(c=>{const k=c.charCodeAt(0);return k<768||k>879}).join('');
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 G.pct = (a,b)=>b?Math.round(a/b*100):0;
 G.hm = min=>{const h=Math.floor(min/60),m=Math.round(min%60);return h?h+'h'+(m?pad(m):''):m+'min'};
@@ -1638,7 +1684,7 @@ const EDITAL = G.EDITAL = [];
 
 /* ---------- grupo: participantes ---------- */
 const SEEDS = window.GAB_PERFIS||[];            /* perfis pré-cadastrados (ausentes na versão hospedada) */
-const DOCS = ['cfg','edital','sessoes','revisoes','erros','simulados','ciclo'];
+const DOCS = ['cfg','edital','sessoes','revisoes','erros','simulados','ciclo','provas'];
 let members = {};
 try{const m=JSON.parse(localStorage.getItem('gabinete-membros')||'null'); if(m&&typeof m==='object'&&!Array.isArray(m)) members=m}catch(e){}
 if(!Object.keys(members).length) SEEDS.forEach((p,i)=>{members[p.id]={nome:p.nome,completo:p.completo||'',resumo:p.resumo||'',at:i+1}});
@@ -1652,7 +1698,7 @@ G.perfil = ()=>G.member(pid);
 const lsKey = p=>'gabinete-msc-v2:'+p;
 const defaults = p=>({
   cfg:Object.assign({nome:(members[p]||{}).nome||'',enam:'nao',horas:4,dias:6,meta:80,metaQ:100,niveis:{},onboarded:false,colacao:'',aj:'parcial'},clone((SEEDS.find(x=>x.id===p)||{}).cfg||{})),
-  edital:{}, sessoes:[], revisoes:[], erros:[], simulados:[], ciclo:{seq:[],pos:0,sig:''}
+  edital:{}, sessoes:[], revisoes:[], erros:[], simulados:[], ciclo:{seq:[],pos:0,sig:''}, provas:{}
 });
 const S = G.S = defaults(pid);
 let stamps = {};
@@ -1661,6 +1707,7 @@ function normalize(st,p){
   const d=defaults(p);
   st.cfg=Object.assign(d.cfg,st.cfg||{}); st.cfg.niveis=st.cfg.niveis||{};
   ['sessoes','revisoes','erros','simulados'].forEach(k=>{if(!Array.isArray(st[k]))st[k]=[]});
+  if(!st.provas||typeof st.provas!=='object'||Array.isArray(st.provas))st.provas={};
   if(!st.edital||typeof st.edital!=='object'||Array.isArray(st.edital))st.edital={};
   if(!st.ciclo||!Array.isArray(st.ciclo.seq))st.ciclo=d.ciclo;
   return st;
@@ -1880,7 +1927,7 @@ G.placar = function(k){
 G.feed = function(n){
   const de=addDays(today(),-21), out=[];
   G.members().forEach(m=>{const st=G.stateOf(m.id); if(!st) return;
-    st.sessoes.forEach(s=>{if(s.d>=de) out.push({id:s.id,by:m.id,d:s.d,tipo:'sessao',s})});
+    st.sessoes.forEach(s=>{if(s.d>=de&&!s.prova) out.push({id:s.id,by:m.id,d:s.d,tipo:'sessao',s})});   /* prova real aparece uma vez só, como simulado */
     st.simulados.forEach(x=>{if(x.d>=de) out.push({id:x.id,by:m.id,d:x.d,tipo:'simulado',x})})});
   return out.sort((a,b)=>a.d!==b.d?(a.d<b.d?1:-1):(a.id<b.id?1:-1)).slice(0,n||40);
 };
@@ -1977,15 +2024,16 @@ G.accByDisc = function(st){
   (st||S).sessoes.forEach(s=>{const x=a[s.disc]; if(!x)return; x.min+=s.min; if(s.tipo!=='quiz-ia'){x.q+=s.q;x.ok+=s.ok}});
   return a;
 };
+G.MINQ = 6;   /* mínimo de questões registradas na disciplina para a projeção confiar no seu percentual (uma prova inteira do ENAM traz de 6 a 16) */
 G.projection = function(){
   const acc=G.accByDisc(); const blocos={1:{exp:0,proj:0,semDados:0},2:{exp:0,proj:0,semDados:0},3:{exp:0,proj:0,semDados:0}};
   DISC.forEach(d=>{const e=G.expQ(d.id), x=acc[d.id]; const b=blocos[d.bloco]; b.exp+=e;
-    if(x.q>=20) b.proj+=e*x.ok/x.q; else {b.proj+=e*0.5; b.semDados+=e}});
+    if(x.q>=G.MINQ) b.proj+=e*x.ok/x.q; else {b.proj+=e*0.5; b.semDados+=e}});
   return {blocos,total:blocos[1].proj+blocos[2].proj+blocos[3].proj,semDados:blocos[1].semDados+blocos[2].semDados+blocos[3].semDados};
 };
 G.projectionEnam = function(st){
   const acc=G.accByDisc(st); let total=0, semDados=0; const linhas=[];
-  DISC.filter(d=>d.enam).forEach(d=>{const x=acc[d.id], tem=x.q>=20, p=tem?x.ok/x.q:0.5; total+=d.enam*p; if(!tem) semDados+=d.enam; linhas.push({d,p,tem,pts:d.enam*p})});
+  DISC.filter(d=>d.enam).forEach(d=>{const x=acc[d.id], tem=x.q>=G.MINQ, p=tem?x.ok/x.q:0.5; total+=d.enam*p; if(!tem) semDados+=d.enam; linhas.push({d,p,tem,pts:d.enam*p})});
   return {total,semDados,linhas};
 };
 G.summary = function(st){
@@ -2026,6 +2074,46 @@ G.doneReview = function(id){
 };
 G.snoozeReview = function(id,n){const r=S.revisoes.find(x=>x.id===id); if(r){r.due=addDays(today(),n);G.touch('revisoes')}};
 G.addReview = function(disc,titulo,due){S.revisoes.push({id:uid(),key:'',disc,titulo,due,step:0,done:false});G.touch('revisoes')};
+
+/* ---------- provas reais: folha de respostas corrigida pelo gabarito oficial ---------- */
+G.GABS={};
+(function(){const el=document.getElementById('d-gabaritos'); if(el){try{G.GABS=JSON.parse(el.textContent)}catch(e){G.dataNotes.push('Gabaritos: JSON inválido')}}})();
+G.provaQs = p=>((PROVAS[p.fam]||{})[p.ano]||[]);
+G.provaResp = p=>{const n=G.provaQs(p).length, r=(S.provas[p.id]||{}).resp||''; return (r+'-'.repeat(n)).slice(0,n)};
+G.marcarProva = function(p,q,letra){
+  const n=G.provaQs(p).length, o=S.provas[p.id]=S.provas[p.id]||{}; const a=G.provaResp(p).split('');
+  if(q<1||q>n||o.corrigida) return; a[q-1]=a[q-1]===letra?'-':letra; o.resp=a.join(''); G.touch('provas');
+};
+/* anulada vale ponto para todos, como na correção oficial */
+G.corrigirProva = function(p,resp){
+  const key=G.GABS[p.id]||'', qs=G.provaQs(p), porDisc={}, blocos={1:0,2:0,3:0}, erros=[]; let ok=0, brancos=0, anul=0;
+  qs.forEach(q=>{const k=key[q.q-1]||'?', r=resp[q.q-1]||'-', d=porDisc[q.disc]=porDisc[q.disc]||{n:0,ok:0}; d.n++;
+    const certo=k==='X'||r===k; if(k==='X') anul++; else if(r==='-') brancos++;
+    if(certo){ok++;d.ok++;blocos[byId[q.disc].bloco]++} else erros.push({q:q.q,disc:q.disc,macro:q.macro,tema:q.tema,marcou:r,gab:k})});
+  return {n:qs.length,ok,brancos,anul,porDisc,blocos,erros,semChave:!key||key.length<qs.length};
+};
+G.salvarProva = function(p,min){
+  const resp=G.provaResp(p), r=G.corrigirProva(p,resp), t=today(); min=clamp(+min||0,0,600);
+  S.provas[p.id]=Object.assign(S.provas[p.id]||{},{resp,corrigida:true,ok:r.ok,n:r.n,min,em:t});
+  S.simulados=S.simulados.filter(x=>x.id!=='prova:'+p.id);
+  S.simulados.push(p.fam==='enam'?{id:'prova:'+p.id,tipo:'enam',d:t,nome:p.nome+' (prova real)',total:r.ok}
+    :{id:'prova:'+p.id,tipo:'tjsc',d:t,nome:p.nome+' (prova real)',b1:r.blocos[1],b2:r.blocos[2],b3:r.blocos[3]});
+  S.sessoes=S.sessoes.filter(s=>s.prova!==p.id);
+  let qAcum=0, minAcum=0;   /* reparte os minutos pelo nº de questões, sem sobra de arredondamento */
+  Object.entries(r.porDisc).forEach(([disc,d])=>{qAcum+=d.n; const alvo=Math.round(min*qAcum/r.n), m=alvo-minAcum; minAcum=alvo;
+    S.sessoes.push({id:uid(),d:t,disc,min:m,tipo:'simulado',q:d.n,ok:d.ok,nota:p.nome,ciclo:false,prova:p.id})});
+  G.touch('provas','simulados','sessoes'); return r;
+};
+G.refazerProva = function(p){
+  delete S.provas[p.id]; S.simulados=S.simulados.filter(x=>x.id!=='prova:'+p.id); S.sessoes=S.sessoes.filter(s=>s.prova!==p.id);
+  G.touch('provas','simulados','sessoes');
+};
+G.errosParaCaderno = function(p){
+  const r=G.corrigirProva(p,G.provaResp(p)); let n=0;
+  r.erros.forEach(e=>{const ref=p.id+':'+e.q; if(S.erros.some(x=>x.ref===ref)) return; n++;
+    S.erros.push({id:uid(),ref,d:today(),disc:e.disc,tema:(e.macro+' — '+e.tema).slice(0,140),nota:p.nome+', questão '+e.q+': marquei '+(e.marcou==='-'?'em branco':e.marcou)+', gabarito '+e.gab+'. Escreva aqui a regra correta.',ok:false})});
+  if(n) G.touch('erros'); return n;
+};
 
 /* ---------- boot do estado ---------- */
 loadState(pid);
@@ -2336,6 +2424,92 @@ G.extraActions={
 })();
 </script>
 <script>
+/* ===================== Gabinete · questões (etapa 1: provas reais com gabarito oficial) ===================== */
+(function(){
+'use strict';
+const G=window.G, F=window.GAB_FACTS, {$,esc,DISC,byId,bar,dot}=G, S=G.S, ui=G.ui, V=G.views;
+const L='ABCDE', BLN={1:'I',2:'II',3:'III'};
+ui.prova='';
+const provaDe=id=>F.PROVAS_REAIS.find(p=>p.id===id)||null;
+const clock=ms=>{const s=Math.max(0,Math.floor(ms/1000));return String(Math.floor(s/3600)).padStart(2,'0')+':'+String(Math.floor(s%3600/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')};
+
+function veredito(p,r){
+  if(p.fam==='enam') return r.ok>=62?['good','habilitaria com folga']:r.ok>=F.ENAM.minimo?['warn','habilitaria no limite']:['crit','abaixo dos 56 acertos'];
+  const M=F.PROVA.minimos, okMin=r.blocos[1]>=M[1]&&r.blocos[2]>=M[2]&&r.blocos[3]>=M[3]&&r.ok>=F.PROVA.total;
+  if(!okMin) return ['crit','eliminado nos mínimos'];
+  return r.ok>=p.corte?['good','entre os convocados daquele ano']:['warn','habilitado, mas abaixo do corte de '+p.corte];
+}
+
+/* ---------- lista de provas ---------- */
+function lista(){
+  const card=p=>{const st=S.provas[p.id]||{}, n=G.provaQs(p).length, feitas=(st.resp||'').replace(/-/g,'').length;
+    let pill='<span class="pill info">não iniciada</span>';
+    if(st.corrigida){const v=veredito(p,G.corrigirProva(p,G.provaResp(p))); pill=`<span class="pill ${v[0]}">${st.ok}/${st.n} · ${v[1]}</span>`}
+    else if(feitas) pill=`<span class="pill warn">em andamento · ${feitas}/${n}</span>`;
+    return `<section class="panel"><div class="panel-head"><h3 style="font-family:var(--f-display);font-size:1.05rem">${esc(p.nome)}</h3>${pill}</div>
+      <p class="small muted">${n} questões · aplicada em ${esc(p.data)}. ${esc(p.nota||'')}</p>
+      <div class="row"><button class="btn primary sm" data-act="pr-abrir" data-arg="${p.id}">${st.corrigida?'Ver correção':feitas?'Continuar':'Abrir folha de respostas'}</button><a class="btn sm" href="${esc(p.pdf)}" target="_blank" rel="noopener">Caderno Tipo 1 (PDF)</a></div></section>`};
+  const enam=F.PROVAS_REAIS.filter(p=>p.fam==='enam'&&G.provaQs(p).length), tjsc=F.PROVAS_REAIS.filter(p=>p.fam==='tjsc'&&G.provaQs(p).length);
+  return `
+  <header class="page-head"><div><div class="eyebrow">Questões · provas reais da FGV</div><h1>Provas reais com gabarito oficial</h1><p>Abra o caderno oficial (sempre o <b>Tipo 1</b>), resolva como no dia da prova e marque as respostas aqui. A plataforma corrige pelo gabarito definitivo, dá a nota por disciplina, mostra o capítulo de cada erro e alimenta a projeção de nota e o placar. Os enunciados ficam no PDF oficial — não são copiados para cá.</p></div></header>
+  <div class="alert calm"><span class="mark">a seguir</span><div><b>Bateria por unidade, flashcards e lacunas de lei seca</b><span class="small">Chegam nas próximas etapas, gerados a partir dos PDFs de vocês e entregues pelo banco do grupo. As provas reais abaixo já funcionam, inclusive sem internet depois de baixar o PDF.</span></div></div>
+  <div class="eyebrow">ENAM · 80 questões · habilita com 56</div><div class="cols">${enam.map(card).join('')}</div>
+  <div class="eyebrow">TJSC · 100 questões · mínimos 12 · 9 · 9 e 60 no total</div><div class="cols">${tjsc.map(card).join('')}</div>`;
+}
+
+/* ---------- folha de respostas ---------- */
+function resultado(p,r){
+  const v=veredito(p,r), tot=p.fam==='enam'?80:100, M=F.PROVA.minimos;
+  const porDisc=DISC.filter(d=>r.porDisc[d.id]).map(d=>{const x=r.porDisc[d.id]; return bar(dot(d.bloco)+' '+esc(d.short),x.ok,x.n,'b'+d.bloco,x.ok+'/'+x.n,d.nome+': '+x.ok+' de '+x.n+' ('+G.pct(x.ok,x.n)+'%)')}).join('');
+  const caps={}; r.erros.forEach(e=>{const k=byId[e.disc].short+' · '+e.macro; caps[k]=(caps[k]||0)+1});
+  const topCaps=Object.entries(caps).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  return `<section class="panel" style="border-color:var(--primary)"><div class="panel-head"><h2>Resultado</h2><span class="pill ${v[0]}">${v[1]}</span></div>
+    <div class="stats"><div class="stat"><span class="v">${r.ok}/${tot}</span><span class="l">acertos${r.anul?' (inclui '+r.anul+' anulada'+(r.anul>1?'s':'')+')':''}</span></div><div class="stat"><span class="v">${r.erros.length-r.brancos}</span><span class="l">erradas</span></div><div class="stat"><span class="v">${r.brancos}</span><span class="l">em branco</span></div>${p.fam==='tjsc'?[1,2,3].map(b=>`<div class="stat"><span class="v">${r.blocos[b]}</span><span class="l">Bloco ${BLN[b]} · mínimo ${M[b]}</span></div>`).join(''):''}</div>
+    <div class="cols"><div><div class="eyebrow" style="margin-bottom:8px">Acertos por disciplina</div><div class="bars">${porDisc}</div></div>
+      <div><div class="eyebrow" style="margin-bottom:8px">Onde os erros se concentram</div>${topCaps.length?`<div class="row">${topCaps.map(([k,n])=>`<span class="chip">${esc(k)} <b>${n}</b></span>`).join('')}</div>`:'<p class="small muted">Nenhum erro. Gabaritou.</p>'}
+        <p class="small muted" style="margin-top:10px">O resultado já entrou em Desempenho (projeção de nota e acerto por disciplina), nos simulados e no placar do grupo.</p></div></div>
+    ${r.erros.length?`<div class="tbl-wrap scroll-y"><table class="data"><thead><tr><th class="n">Nº</th><th>Disciplina</th><th>Capítulo</th><th>Tema cobrado</th><th>Marquei</th><th>Gabarito</th></tr></thead><tbody>${r.erros.map(e=>`<tr><td class="n">${e.q}</td><td>${dot(byId[e.disc].bloco)} ${esc(byId[e.disc].short)}</td><td>${esc(e.macro)}</td><td>${esc(e.tema)}</td><td class="num">${e.marcou==='-'?'—':e.marcou}</td><td class="num"><b>${e.gab}</b></td></tr>`).join('')}</tbody></table></div>`:''}
+    <div class="row">${r.erros.length?`<button class="btn" data-act="pr-erros" data-arg="${p.id}">Mandar os erros para o caderno de erros</button>`:''}<a class="btn" href="${esc(p.gab)}" target="_blank" rel="noopener">Gabarito oficial (PDF)</a><button class="btn danger" data-act="pr-refazer" data-arg="${p.id}">Refazer esta prova</button></div></section>`;
+}
+function folha(p){
+  const qs=G.provaQs(p), st=S.provas[p.id]||{}, resp=G.provaResp(p), key=G.GABS[p.id]||'', corr=!!st.corrigida, feitas=resp.replace(/-/g,'').length;
+  const r=corr?G.corrigirProva(p,resp):null;
+  const secs=[]; qs.forEach(q=>{const u=secs[secs.length-1]; if(u&&u.disc===q.disc) u.qs.push(q); else secs.push({disc:q.disc,qs:[q]})});
+  const linha=q=>{const m=resp[q.q-1], k=key[q.q-1];
+    return `<div class="fr" data-q="${q.q}"><span class="qn">${q.q}</span>${L.split('').map(l=>{let c=''; if(corr){if(k===l)c='k'; if(m===l)c+=(k===l||k==='X')?' c':' x'}
+      return `<button class="${c.trim()}" data-act="pr-marca" data-arg="${p.id}|${q.q}|${l}" aria-pressed="${m===l}" ${corr?'disabled':''} aria-label="Questão ${q.q}, alternativa ${l}">${l}</button>`}).join('')}<span class="st">${corr&&k==='X'?'anulada':''}</span></div>`};
+  return `
+  <header class="page-head"><div><div class="eyebrow">Folha de respostas · ${esc(p.data)}</div><h1>${esc(p.nome)}</h1><p>Use o caderno <b>Tipo 1</b>: a ordem das questões muda entre os tipos e o gabarito embutido é o do Tipo 1. Suas marcações ficam salvas — dá para parar e continuar depois.</p></div>
+    <div class="row"><button class="btn" data-act="pr-voltar">Todas as provas</button><a class="btn primary" href="${esc(p.pdf)}" target="_blank" rel="noopener">Abrir caderno Tipo 1 (PDF)</a></div></header>
+  ${corr?resultado(p,r):`<section class="panel"><div class="spread"><div class="row"><span class="chip">respondidas <b id="pr-count">${feitas}</b>/${qs.length}</span><span class="chip">tempo <b id="pr-clock" data-ini="${st.inicio||''}">${st.inicio?clock(Date.now()-st.inicio):'—'}</b></span></div>
+      <div class="row">${st.inicio?'':`<button class="btn sm" data-act="pr-crono" data-arg="${p.id}">Iniciar cronômetro (prova real: 5 h)</button>`}<button class="btn sm primary" data-act="pr-corrigir" data-arg="${p.id}">Corrigir prova</button></div></div>
+      <span class="tiny faint">Meta de ritmo: ${p.fam==='enam'?'3 min 45 s':'3 min'} por questão. Sem desconto por erro — na prova, nunca deixe em branco.</span></section>`}
+  ${secs.map(s=>`<section class="panel"><div class="panel-head"><h3>${dot(byId[s.disc].bloco)} ${esc(byId[s.disc].nome)}</h3><span class="small muted num">questões ${s.qs[0].q}–${s.qs[s.qs.length-1].q}${corr?' · '+r.porDisc[s.disc].ok+'/'+r.porDisc[s.disc].n:''}</span></div><div class="sheet">${s.qs.map(linha).join('')}</div></section>`).join('')}
+  ${corr?'':`<div class="row"><button class="btn primary" data-act="pr-corrigir" data-arg="${p.id}">Corrigir prova</button><button class="btn danger" data-act="pr-refazer" data-arg="${p.id}">Apagar marcações</button></div>`}`;
+}
+V.questoes=function(){const p=provaDe(ui.prova); return p&&G.provaQs(p).length?folha(p):lista()};
+setInterval(()=>{const c=$('#pr-clock'); if(c&&c.dataset.ini) c.textContent=clock(Date.now()-(+c.dataset.ini))},1000);
+
+/* ---------- ações ---------- */
+Object.assign(G.extraActions=G.extraActions||{},{
+  'pr-abrir'(id){ui.prova=id;ui.route='questoes';G.render();window.scrollTo(0,0)},
+  'pr-voltar'(){ui.prova='';G.render();window.scrollTo(0,0)},
+  'pr-marca'(a,btn){const [id,q,l]=a.split('|'), p=provaDe(id); if(!p)return; G.marcarProva(p,+q,l);
+    const resp=G.provaResp(p), row=btn.closest('.fr'); if(row) row.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.textContent===resp[+q-1])));
+    const c=$('#pr-count'); if(c) c.textContent=resp.replace(/-/g,'').length},
+  'pr-crono'(id){const o=S.provas[id]=S.provas[id]||{}; if(!o.inicio){o.inicio=Date.now();G.touch('provas')} G.render()},
+  'pr-corrigir'(id){const p=provaDe(id); if(!p)return; const st=S.provas[id]||{}, resp=G.provaResp(p), n=resp.length, br=(resp.match(/-/g)||[]).length;
+    if(br===n){G.toast('Marque as respostas antes de corrigir');return}
+    const sug=st.inicio?Math.min(600,Math.max(1,Math.round((Date.now()-st.inicio)/60000))):'';
+    G.dlg('Corrigir '+esc(p.nome),`${br?`<div class="alert gold"><span class="mark">${br}</span><div><b>${br} questão(ões) em branco</b><span class="small">Elas contam como erro. Depois de corrigir, a folha fica travada (dá para refazer do zero).</span></div></div>`:'<p class="small muted">Depois de corrigir, a folha fica travada (dá para refazer do zero).</p>'}
+      <div class="field"><label for="pr-min">Quanto tempo você levou, em minutos? (entra nas suas horas de estudo)</label><input type="number" id="pr-min" name="min" min="0" max="600" value="${sug}" placeholder="ex.: 270"></div>`,
+      fd=>{const r=G.salvarProva(p,fd.min); G.toast('Corrigida: '+r.ok+'/'+r.n)},'Corrigir agora')},
+  'pr-refazer'(id){const p=provaDe(id); if(!p)return; G.dlg('Refazer '+esc(p.nome)+'?','<p>Apaga as marcações e o resultado desta prova (inclusive do desempenho, dos simulados e do placar). Os erros já enviados ao caderno de erros continuam lá.</p>',()=>{G.refazerProva(p)},'Apagar e refazer')},
+  'pr-erros'(id){const p=provaDe(id); if(!p)return; const n=G.errosParaCaderno(p); G.toast(n?n+' erro(s) no caderno — escreva a regra correta de cada um em Revisões':'Esses erros já estavam no caderno')}
+});
+})();
+</script>
+<script>
 /* ===================== Gabinete · telas (2/2), ações e boot ===================== */
 (function(){
 'use strict';
@@ -2352,10 +2526,10 @@ V.desempenho=function(){
     +bar('<b>Total</b>',pr.total,100,'',pr.total.toFixed(1)+'/100','Projeção total · mínimo 60 · veja a nota de corte de referência abaixo',P.total);
   const discBars=DISC.map(d=>{const x=acc[d.id]; const p=x.q?x.ok/x.q*100:0;
     return bar(dot(d.bloco)+' '+esc(d.short),p,100,'b'+d.bloco,x.q?p.toFixed(0)+'% <span class="faint">('+x.q+')</span>':'—',d.nome+': '+x.ok+'/'+x.q+' questões · '+G.hm(x.min)+' estudadas',meta)}).join('');
-  const fracas=DISC.filter(d=>acc[d.id].q>=20).sort((a,b)=>acc[a.id].ok/acc[a.id].q-acc[b.id].ok/acc[b.id].q).slice(0,3);
+  const fracas=DISC.filter(d=>acc[d.id].q>=10).sort((a,b)=>acc[a.id].ok/acc[a.id].q-acc[b.id].ok/acc[b.id].q).slice(0,3);
   const pe=G.projectionEnam(), E=F.ENAM;
   const enamPanel=`<section class="panel"><div class="panel-head"><h2>Projeção de nota no ENAM</h2>${pe.semDados>1?`<span class="pill warn">${pe.semDados} questões sem dados seus</span>`:`<span class="pill ${pe.total>=62?'good':pe.total>=E.minimo?'warn':'crit'}">${pe.total>=62?'com folga':pe.total>=E.minimo?'no limite':'abaixo de 56'}</span>`}</div>
-      <div class="bars">${pe.linhas.map(l=>bar(dot(l.d.bloco)+' '+esc(l.d.short),l.pts,16,'b'+l.d.bloco,l.tem?l.pts.toFixed(1)+'/'+l.d.enam:'<span class="faint">?/'+l.d.enam+'</span>',l.d.nome+': '+(l.tem?Math.round(l.p*100)+'% de acerto × '+l.d.enam+' questões':'menos de 20 questões registradas — presumido 50%'),l.d.enam)).join('')}${bar('<b>Total</b>',pe.total,80,'',pe.total.toFixed(1)+'/80','Projeção total no ENAM · habilita com 56',E.minimo)}</div>
+      <div class="bars">${pe.linhas.map(l=>bar(dot(l.d.bloco)+' '+esc(l.d.short),l.pts,16,'b'+l.d.bloco,l.tem?l.pts.toFixed(1)+'/'+l.d.enam:'<span class="faint">?/'+l.d.enam+'</span>',l.d.nome+': '+(l.tem?Math.round(l.p*100)+'% de acerto × '+l.d.enam+' questões':'menos de 6 questões registradas — presumido 50%'),l.d.enam)).join('')}${bar('<b>Total</b>',pe.total,80,'',pe.total.toFixed(1)+'/80','Projeção total no ENAM · habilita com 56',E.minimo)}</div>
       <span class="tiny faint">Traço = teto de cada disciplina; no total, o traço é o mínimo de 56 acertos. Mire 62 ou mais: a dificuldade varia muito entre edições.</span></section>`;
   const sims=S.simulados.slice().sort((a,b)=>a.d<b.d?1:-1);
   const simRow=s=>{const en=s.tipo==='enam', t=en?s.total:s.b1+s.b2+s.b3, ok=en?t>=E.minimo:(s.b1>=12&&s.b2>=9&&s.b3>=9&&t>=60);
@@ -2363,7 +2537,7 @@ V.desempenho=function(){
     return `<tr><td class="num">${G.fmtShort(s.d)}</td><td>${esc(s.nome)}</td><td>${en?'ENAM':'TJSC'}</td><td class="n">${en?'—':s.b1}</td><td class="n">${en?'—':s.b2}</td><td class="n">${en?'—':s.b3}</td><td class="n"><b>${t}</b>/${en?80:100}</td><td><span class="pill ${cls}">${txt}</span></td><td><button class="btn sm ghost danger" data-act="sim-del" data-arg="${s.id}" aria-label="Excluir simulado">×</button></td></tr>`};
   const ses=S.sessoes.slice().sort((a,b)=>a.d<b.d?1:(a.d>b.d?-1:0)).slice(0,25);
   return `
-  <header class="page-head"><div><div class="eyebrow">Desempenho</div><h1>Onde você está em relação à prova</h1><p>A projeção multiplica seu percentual de acerto em cada disciplina pelo número de questões que ela costuma render no TJSC. Disciplinas com menos de 20 questões registradas entram com 50% presumidos.</p></div>
+  <header class="page-head"><div><div class="eyebrow">Desempenho</div><h1>Onde você está em relação à prova</h1><p>A projeção multiplica seu percentual de acerto em cada disciplina pelo número de questões que ela costuma render no TJSC. Disciplinas com menos de 6 questões registradas entram com 50% presumidos; com poucas questões o número oscila bastante — ele firma conforme você registra mais.</p></div>
     <div class="row"><button class="btn" data-act="log" data-arg="|0">Registrar estudo</button><button class="btn" data-act="sim-add" data-arg="enam">Simulado ENAM</button><button class="btn" data-act="sim-add" data-arg="tjsc">Simulado TJSC</button></div></header>
   <div class="stats"><div class="stat"><span class="v">${G.hm(tmin)}</span><span class="l">estudadas no total</span></div><div class="stat"><span class="v">${tq}</span><span class="l">questões de prova registradas</span></div><div class="stat"><span class="v">${tq?G.pct(tok,tq)+'%':'—'}</span><span class="l">acerto geral · meta ${meta}%</span></div><div class="stat"><span class="v">${(G.overallProgress()*100).toFixed(0)}%</span><span class="l">do edital coberto</span></div></div>
   <div class="cols">
@@ -2374,7 +2548,7 @@ V.desempenho=function(){
       <p class="small muted">${esc(P.corteRef)}</p></section>
     <section class="panel"><div class="panel-head"><h2>Acerto por disciplina</h2><span class="small muted">traço = sua meta (${meta}%)</span></div>
       <div class="bars">${discBars}</div>
-      ${fracas.length?`<p class="small"><b>Prioridade de reforço:</b> ${fracas.map(d=>esc(d.short)+' ('+G.pct(acc[d.id].ok,acc[d.id].q)+'%)').join(' · ')}. Marque essas disciplinas como “Fraco” em Ajustes para o ciclo dar mais blocos a elas.</p>`:'<p class="small muted">Registre ao menos 20 questões por disciplina para o diagnóstico aparecer.</p>'}</section>
+      ${fracas.length?`<p class="small"><b>Prioridade de reforço:</b> ${fracas.map(d=>esc(d.short)+' ('+G.pct(acc[d.id].ok,acc[d.id].q)+'%)').join(' · ')}. Marque essas disciplinas como “Fraco” em Ajustes para o ciclo dar mais blocos a elas.</p>`:'<p class="small muted">Registre ao menos 10 questões por disciplina para o diagnóstico aparecer.</p>'}</section>
   </div>
   <section class="panel"><div class="panel-head"><h2>Simulados</h2><span class="small muted">sempre 5 horas cronometradas, domingo à tarde, no horário da prova</span></div>
     ${sims.length?`<div class="tbl-wrap"><table class="data"><thead><tr><th>Data</th><th>Simulado</th><th>Tipo</th><th class="n">Bl. I /40</th><th class="n">Bl. II /30</th><th class="n">Bl. III /30</th><th class="n">Total</th><th>Situação</th><th></th></tr></thead><tbody>${sims.map(simRow).join('')}</tbody></table></div>`:'<p class="small muted">Nenhum simulado ainda. As cinco provas anteriores do ENAM e as três do TJSC, todas da FGV, são os melhores simulados que existem — os links estão no Raio-X.</p>'}</section>
@@ -2488,7 +2662,7 @@ V.ajustes=function(){
 };
 
 /* ---------- navegação, diálogo, toast, tooltip, timer ---------- */
-const ROUTES=[['hoje','Hoje'],['grupo','Grupo'],['plano','Plano'],['edital','Edital'],['raiox','Raio-X das provas'],['desempenho','Desempenho'],['revisoes','Revisões'],['treino','Treino com IA'],['carreiras','Carreiras SC'],['metodo','Método'],['ajustes','Ajustes']];
+const ROUTES=[['hoje','Hoje'],['grupo','Grupo'],['questoes','Questões'],['plano','Plano'],['edital','Edital'],['raiox','Raio-X das provas'],['desempenho','Desempenho'],['revisoes','Revisões'],['treino','Treino com IA'],['carreiras','Carreiras SC'],['metodo','Método'],['ajustes','Ajustes']];
 function renderNav(){
   const p=G.perfil(); if(!p){$('#nav').innerHTML='';return}
   const due=G.dueReviews().length;
@@ -2569,7 +2743,9 @@ const A={
   'sim-add'(tipo){
     if(tipo==='enam'){dlg('Registrar simulado do ENAM',`<div class="form-grid"><div class="field"><label for="se-n">Qual prova</label><input type="text" id="se-n" name="nome" required maxlength="80" placeholder="ex.: ENAM 2026.1 (prova real)"></div><div class="field"><label for="se-d">Data</label><input type="date" id="se-d" name="d" value="${G.today()}"></div><div class="field"><label for="se-t">Acertos (0–80)</label><input type="number" id="se-t" name="total" min="0" max="80" required></div></div><p class="small muted">Depois, lance também os acertos por disciplina em “Registrar estudo” (atividade Simulado): é isso que alimenta a projeção e o diagnóstico.</p>`,fd=>{S.simulados.push({id:G.uid(),tipo:'enam',d:fd.d||G.today(),nome:fd.nome.trim(),total:Math.min(80,+fd.total||0)});G.touch('simulados')});return}
     dlg('Registrar simulado do TJSC',`<div class="form-grid"><div class="field"><label for="sm-n">Nome</label><input type="text" id="sm-n" name="nome" required maxlength="80" placeholder="ex.: TJSC 2024 (prova real)"></div><div class="field"><label for="sm-d">Data</label><input type="date" id="sm-d" name="d" value="${G.today()}"></div></div><div class="form-grid"><div class="field"><label for="sm-1">Acertos Bloco I (0–40)</label><input type="number" id="sm-1" name="b1" min="0" max="40" required></div><div class="field"><label for="sm-2">Bloco II (0–30)</label><input type="number" id="sm-2" name="b2" min="0" max="30" required></div><div class="field"><label for="sm-3">Bloco III (0–30)</label><input type="number" id="sm-3" name="b3" min="0" max="30" required></div></div>`,fd=>{S.simulados.push({id:G.uid(),tipo:'tjsc',d:fd.d||G.today(),nome:fd.nome.trim(),b1:Math.min(40,+fd.b1||0),b2:Math.min(30,+fd.b2||0),b3:Math.min(30,+fd.b3||0)});G.touch('simulados')})},
-  'sim-del'(id){S.simulados=S.simulados.filter(x=>x.id!==id);G.touch('simulados');render()},
+  'sim-del'(id){const pr=id.indexOf('prova:')===0&&F.PROVAS_REAIS.find(p=>'prova:'+p.id===id);
+    if(pr){dlg('Excluir o resultado de '+esc(pr.nome)+'?','<p>Esse simulado veio da folha de respostas. Excluir apaga também as marcações e o resultado da prova.</p>',()=>{G.refazerProva(pr)},'Excluir');return}
+    S.simulados=S.simulados.filter(x=>x.id!==id);G.touch('simulados');render()},
   'ses-del'(id){G.delSession(id);render()},
   'treino-tab'(t){ui.treino=t;ui.aiNote='';render()},
   'ai-stop'(){if(ui.aiCtl)ui.aiCtl.abort()},
