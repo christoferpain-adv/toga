@@ -256,7 +256,53 @@ a.btn{text-decoration:none;color:var(--ink)} a.btn.primary{color:var(--primary-i
 .reac .em[aria-pressed="true"]{background:var(--primary-soft);border-color:var(--primary)}
 .reac .em .num{font-size:.74rem;color:var(--ink-2)}
 .cmt{font-size:.88rem;background:var(--surface-2);border-radius:8px;padding:7px 11px}
-@media (prefers-reduced-motion:no-preference){.prog i,.br .fill{transition:width .35s ease}}
+/* ---------- leitura do material: tipografia de texto corrido, não de interface ---------- */
+.leitura{--ls:1;max-width:none}
+/* o texto fica na medida de leitura; quadros podem ser mais largos que ela */
+.leitura .corpo{margin:0 auto;font-family:var(--f-display);
+  font-size:calc(1.06rem * var(--ls));line-height:1.78;color:var(--ink)}
+.leitura .corpo > *{max-width:68ch;margin-inline:auto}
+.leitura .corpo > div:has(.quadro){max-width:min(96ch,100%)}
+.leitura .corpo > * + *{margin-top:1.05em}
+.leitura .corpo p,.leitura .corpo li{hyphens:auto}
+.leitura .corpo h2{font-size:calc(1.22rem * var(--ls));line-height:1.3;margin-top:2.2em;
+  padding-top:.9em;border-top:1px solid var(--line);font-weight:600;letter-spacing:-.01em}
+.leitura .corpo h2:first-child{margin-top:0;padding-top:0;border-top:0}
+.leitura .corpo p{margin:0;text-wrap:pretty}
+.leitura .corpo ul{margin:0;padding-left:0;list-style:none;display:flex;flex-direction:column;gap:.5em}
+.leitura .corpo ul li{padding-left:1.4em;position:relative}
+.leitura .corpo ul li::before{content:"";position:absolute;left:.35em;top:.72em;width:5px;height:5px;border-radius:50%;background:var(--gold)}
+/* dispositivo de lei: citação, não caixa de aviso */
+.leitura .lei{border-left:3px solid var(--gold);background:var(--gold-soft);border-radius:0 6px 6px 0;
+  padding:.85em 1.1em;font-size:calc(.97rem * var(--ls));line-height:1.65}
+.leitura .lei .ref{display:block;font:600 .7rem/1 var(--f-ui);letter-spacing:.09em;text-transform:uppercase;
+  color:var(--gold);margin-bottom:.5em}
+/* quadro para ler, não grade de dados */
+.leitura .quadro{margin:0;border:1px solid var(--line);border-radius:8px;overflow-x:auto;background:var(--surface);hyphens:none}
+.leitura .quadro table{width:100%;min-width:34rem;border-collapse:collapse;font-family:var(--f-ui);font-size:calc(.9rem * var(--ls));line-height:1.5}
+.leitura .quadro th{background:var(--surface-2);font:600 .74rem/1.3 var(--f-ui);letter-spacing:.05em;text-transform:uppercase;
+  color:var(--ink-2);text-align:left;padding:10px 13px;border-bottom:1px solid var(--line)}
+.leitura .quadro td{padding:11px 13px;border-bottom:1px solid var(--line);vertical-align:top}
+.leitura .quadro tr:last-child td{border-bottom:0}
+.leitura .quadro tr:nth-child(even) td{background:color-mix(in srgb,var(--surface-2) 45%,transparent)}
+.leitura .quadro td:first-child{font-weight:600;color:var(--ink);white-space:nowrap}
+.leitura .cap-nota{font-size:.78rem;color:var(--ink-3);margin-top:.5em;font-family:var(--f-ui)}
+/* remissão à página: discreta, à direita, sem peso visual */
+.leitura .rem{font:500 .74rem var(--f-mono);color:var(--ink-3);text-align:right;font-family:var(--f-mono)}
+/* índice do capítulo */
+.leitura .sumario{max-width:68ch;margin:0 auto;display:flex;flex-wrap:wrap;gap:6px}
+.leitura .sumario a{font:500 .8rem var(--f-ui);text-decoration:none;color:var(--ink-2);
+  border:1px solid var(--line);border-radius:99px;padding:4px 11px;background:var(--surface)}
+.leitura .sumario a:hover{border-color:var(--primary);color:var(--primary)}
+/* barra de progresso da leitura */
+.leitura-prog{position:sticky;top:env(safe-area-inset-top,0px);z-index:15;height:3px;background:var(--surface-2);margin-bottom:18px}
+.leitura-prog i{display:block;height:100%;background:var(--primary);width:0}
+.leitura .tam{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden}
+.leitura .tam button{border:0;border-right:1px solid var(--line);background:var(--surface);padding:5px 11px;cursor:pointer;font:600 .85rem var(--f-ui);color:var(--ink-2)}
+.leitura .tam button:last-child{border-right:0}
+.leitura .tam button:hover{background:var(--surface-2);color:var(--ink)}
+@media (max-width:620px){.leitura .corpo{font-size:calc(1.02rem * var(--ls))}.leitura .quadro td:first-child{white-space:normal}}
+@media (prefers-reduced-motion:no-preference){.prog i,.br .fill,.leitura-prog i{transition:width .35s ease}}
 </style>
 
 <div class="app">
@@ -1919,7 +1965,7 @@ const EDITAL = G.EDITAL = [];
 
 /* ---------- grupo: participantes ---------- */
 const SEEDS = window.GAB_PERFIS||[];            /* perfis pré-cadastrados (ausentes na versão hospedada) */
-const DOCS = ['cfg','edital','sessoes','revisoes','erros','simulados','ciclo','provas','temas'];
+const DOCS = ['cfg','edital','sessoes','revisoes','erros','simulados','ciclo','provas','temas','cartoes'];
 let members = {};
 try{const m=JSON.parse(localStorage.getItem('gabinete-membros')||'null'); if(m&&typeof m==='object'&&!Array.isArray(m)) members=m}catch(e){}
 if(!Object.keys(members).length) SEEDS.forEach((p,i)=>{members[p.id]={nome:p.nome,completo:p.completo||'',resumo:p.resumo||'',at:i+1}});
@@ -1933,7 +1979,7 @@ G.perfil = ()=>G.member(pid);
 const lsKey = p=>'gabinete-msc-v2:'+p;
 const defaults = p=>({
   cfg:Object.assign({nome:(members[p]||{}).nome||'',enam:'nao',horas:4,dias:6,meta:80,metaQ:100,niveis:{},onboarded:false,colacao:'',aj:'parcial',inicio:'2026-09-21'},clone((SEEDS.find(x=>x.id===p)||{}).cfg||{})),
-  edital:{}, sessoes:[], revisoes:[], erros:[], simulados:[], ciclo:{seq:[],pos:0,sig:''}, provas:{}, temas:{}
+  edital:{}, sessoes:[], revisoes:[], erros:[], simulados:[], ciclo:{seq:[],pos:0,sig:''}, provas:{}, temas:{}, cartoes:{}
 });
 const S = G.S = defaults(pid);
 let stamps = {};
@@ -1946,6 +1992,7 @@ function normalize(st,p){
   if(!st.edital||typeof st.edital!=='object'||Array.isArray(st.edital))st.edital={};
   if(!st.ciclo||!Array.isArray(st.ciclo.seq))st.ciclo=d.ciclo;
   if(!st.temas||typeof st.temas!=='object'||Array.isArray(st.temas))st.temas={};
+  if(!st.cartoes||typeof st.cartoes!=='object'||Array.isArray(st.cartoes))st.cartoes={};
   return st;
 }
 function readLocal(p,legacy){
@@ -2365,6 +2412,52 @@ G.projTemas=function(){
   TEMAS.forEach(x=>{const st=G.temaSt(x.k); ac+=ACC_DEG[st.g]*x.q; if(st.g>0)cob+=x.q});
   return {acertos:ac/5, cobertura:cob/4};
 };
+/* ---------- flashcards ----------
+   Caixas próprias, mais curtas que as da revisão por unidade: um cartão é um fato,
+   não um capítulo. Cartão novo entra com conta-gotas para a fila não estourar no dia 1. */
+const FC_INT=[1,3,7,16,35];
+G.FC_INT=FC_INT;
+G.FC_NOVOS_DIA=20;
+let CARTOES=null, fcCarregando=false;
+G.cartoesProntos=()=>Array.isArray(CARTOES);
+G.cartoesCarregando=()=>fcCarregando;
+G.cartoesFalharam=()=>CARTOES===false;
+G.carregarCartoes=function(){
+  if(CARTOES||fcCarregando) return Promise.resolve(CARTOES);
+  fcCarregando=true;
+  return fetch('cartoes.json').then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json()})
+    .then(j=>{CARTOES=Array.isArray(j)?j:[]; fcCarregando=false; return CARTOES})
+    .catch(e=>{fcCarregando=false; CARTOES=false; throw e});
+};
+G.cartoes=()=>Array.isArray(CARTOES)?CARTOES:[];
+G.cartaoSt=function(id){
+  if(!S.cartoes) S.cartoes={};
+  if(!S.cartoes[id]) S.cartoes[id]={cx:0,n:0,ok:0,ult:'',prox:''};
+  return S.cartoes[id];
+};
+/* só cartões dos temas que já estão no plano; os de tema ainda fora não aparecem */
+function cartaoAtivo(c){ const st=G.temaSt(c.tema); return st&&st.g>0 }
+G.cartoesDoDia=function(){
+  const t=today(), todos=G.cartoes().filter(cartaoAtivo);
+  const vencidos=todos.filter(c=>{const s=G.cartaoSt(c.id); return s.prox&&s.prox<=t});
+  const novos=todos.filter(c=>!G.cartaoSt(c.id).prox).slice(0,G.FC_NOVOS_DIA);
+  return {vencidos,novos,fila:vencidos.concat(novos),total:todos.length,
+          vistos:todos.filter(c=>G.cartaoSt(c.id).n>0).length};
+};
+G.cartaoResponder=function(id,acertou){
+  const s=G.cartaoSt(id), t=today();
+  s.n++; if(acertou) s.ok++;
+  s.cx = acertou ? Math.min(FC_INT.length-1, s.cx+1) : 0;
+  s.ult=t; s.prox=addDays(t, FC_INT[s.cx]);
+  G.touch('cartoes');
+  return s;
+};
+G.fcResumo=function(){
+  const c=G.cartoes().filter(cartaoAtivo); let n=0,ok=0,maduros=0;
+  c.forEach(x=>{const s=G.cartaoSt(x.id); n+=s.n; ok+=s.ok; if(s.cx>=3) maduros++});
+  return {total:c.length,respostas:n,acerto:n?ok/n:0,maduros};
+};
+
 /* capítulos triados por disciplina, cada um com o que ler e onde estão as questões */
 const CAPS = (function(){
   const el=document.getElementById('d-capitulos'); if(!el) return {};
@@ -3125,6 +3218,7 @@ V.ritmo=function(){
 const G=window.G, {$,esc,DISC,byId}=G, S=G.S, V=G.views, ui=G.ui;
 
 ui.cad={disc:'cst',soEnam:false,cap:'',i:0,resp:null,t0:0,q:0,ok:0,vistas:{}};
+ui.fc={i:0,virou:false};
 const BANCO={};            /* cache por disciplina, carregado sob demanda */
 const CARREGANDO={};
 
@@ -3163,7 +3257,8 @@ V.caderno=function(){
     <div class="alert"><span class="mark">off</span><div><b>O banco não carregou</b><p class="small">As 5.593 questões ficam em arquivos ao lado da página e são buscadas sob demanda. Isso não funciona ao abrir o <code>Gabinete.html</code> direto do disco — use a versão publicada.</p></div></div>`;
 
   if(!carregado){
-    G.carregarBanco(c.disc).then(()=>G.render&&G.render()).catch(()=>G.render&&G.render());
+    /* só dispara quando não há fetch em voo: senão a promise resolve na hora e o render se repete sem fim */
+    if(!CARREGANDO[c.disc]) G.carregarBanco(c.disc).then(()=>G.render&&G.render()).catch(()=>G.render&&G.render());
     return `<header class="page-head"><div><div class="eyebrow">Caderno</div><h1>Caderno de questões</h1>
       <p>Questões comentadas do próprio curso, respondidas aqui. O acerto entra no portão de 8 em 10 do macro-tema, sem lançamento à mão.</p></div></header>
       ${filtros}<div class="panel"><p class="muted">Carregando ${esc(d.nome||c.disc)}…</p></div>`;
@@ -3217,6 +3312,128 @@ V.caderno=function(){
 })();
 </script>
 <script>
+/* ===================== Gabinete · leitura do material filtrado ===================== */
+(function(){
+'use strict';
+const G=window.G, {esc,byId,DISC}=G, S=G.S, V=G.views, ui=G.ui;
+
+ui.ler={disc:'',slug:'',lista:null};
+const CACHE={}; const PEND={};
+
+G.lerCarregar=function(disc,slug){
+  const k=disc+'/'+slug;
+  if(CACHE[k]!==undefined||PEND[k]) return Promise.resolve(CACHE[k]);
+  PEND[k]=true;
+  return fetch('material/'+k+'.json').then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json()})
+    .then(j=>{CACHE[k]=j; PEND[k]=false; return j})
+    .catch(()=>{CACHE[k]=null; PEND[k]=false; return null});
+};
+/* índice: quais capítulos têm material filtrado */
+let INDICE=null, indPend=false;
+G.lerIndice=function(){
+  if(INDICE||indPend) return Promise.resolve(INDICE);
+  indPend=true;
+  return fetch('material/indice.json').then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json()})
+    .then(j=>{INDICE=j; indPend=false; return j}).catch(()=>{INDICE=false; indPend=false; return false});
+};
+G.lerAbrir=function(disc,slug){ ui.ler.disc=disc; ui.ler.slug=slug; ui.route='leitura'; G.render() };
+/* slug do capítulo, igual ao que o gerador usa */
+G.lerSlug=s=>String(s||'').toLowerCase().normalize?String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,60):'';
+
+let hN=0;
+function bloco(b){
+  switch(b.t){
+    case 'h':  return `<h2 id="s${++hN}">${esc(b.x)}</h2>`;
+    case 'p':  return `<p>${esc(b.x)}</p>`;
+    case 'lei': return `<div class="lei"><span class="ref">${esc(b.ref||'dispositivo')}</span>${esc(b.x)}</div>`;
+    case 'lista': return `<ul>${(b.itens||[]).map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`;
+    case 'tabela': return `<div><div class="quadro"><table>
+        ${(b.cab||[]).length?`<thead><tr>${b.cab.map(x=>`<th>${esc(x)}</th>`).join('')}</tr></thead>`:''}
+        <tbody>${(b.linhas||[]).map(l=>`<tr>${l.map(x=>`<td>${esc(x)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>
+        ${b.nota?`<p class="cap-nota">${esc(b.nota)}</p>`:''}</div>`;
+    case 'fonte': return `<p class="rem">${esc(b.x)}</p>`;
+    default: return '';
+  }
+}
+/* controle de tamanho do texto, lembrado neste aparelho */
+G.lerTam=function(d){
+  let v=1; try{v=parseFloat(localStorage.getItem('gabinete-ler-tam'))||1}catch(e){}
+  if(d){ v=Math.max(.85,Math.min(1.45,Math.round((v+d)*100)/100)); try{localStorage.setItem('gabinete-ler-tam',v)}catch(e){} }
+  return v;
+};
+
+V.leitura=function(){
+  const L=ui.ler;
+  if(!L.disc||!L.slug){
+    /* só re-renderiza quando o índice ainda não estava em memória; senão a promise
+       resolve na hora e o render se chama para sempre */
+    if(INDICE===null&&!indPend) G.lerIndice().then(()=>G.render());
+    const ind=INDICE;
+    if(ind===false) return cabec()+`<div class="alert"><span class="mark">off</span><div><b>O material não carregou</b><p class="small">Os capítulos filtrados ficam em arquivos ao lado da página. Isso não funciona abrindo o <code>Gabinete.html</code> do disco — use a versão publicada.</p></div></div>`;
+    if(!ind) return cabec()+'<div class="panel"><p class="muted">Carregando o índice…</p></div>';
+    return cabec()+DISC.filter(d=>ind[d.id]&&ind[d.id].length).map(d=>`<section class="panel">
+      <div class="panel-head"><h2>${esc(d.nome)}</h2><span class="small muted">${ind[d.id].length} capítulos</span></div>
+      <div class="pauta">${ind[d.id].map(c=>`<div class="pi" style="grid-template-columns:minmax(0,1fr) auto">
+        <div><div class="t">${esc(c.c)}</div><div class="s">${esc(c.p||'')}${c.m?' · '+c.m+' min':''}</div></div>
+        <div class="acts"><button class="btn sm" data-act="ler-abrir" data-arg="${esc(d.id)}|${esc(c.s)}">Abrir</button></div></div>`).join('')}</div></section>`).join('');
+  }
+
+  const k=L.disc+'/'+L.slug, m=CACHE[k];
+  if(m===undefined){ if(!PEND[k]) G.lerCarregar(L.disc,L.slug).then(()=>G.render()); return cabec()+'<div class="panel"><p class="muted">Carregando o capítulo…</p></div>' }
+  if(m===null) return cabec()+`<div class="alert"><span class="mark">?</span><div><b>Capítulo não encontrado</b><p class="small">Ainda não há material filtrado para este capítulo.</p></div></div>`;
+
+  const temas=(m.temas||[]).map(t=>(G.TEMAS||[]).find(x=>x.k===t)).filter(Boolean);
+  hN=0;
+  const corpo=(m.blocos||[]).map(bloco).join('');
+  const titulos=(m.blocos||[]).filter(b=>b.t==='h').map((b,i)=>`<a href="#s${i+1}">${esc(b.x)}</a>`).join('');
+  const tam=G.lerTam();
+
+  return `<div class="leitura" style="--ls:${tam}">
+    <div class="leitura-prog"><i id="ler-prog"></i></div>
+    <header class="page-head" style="align-items:flex-start">
+      <div style="max-width:68ch">
+        <div class="eyebrow">${esc(byId[m.disc]?byId[m.disc].nome:m.disc)} · ${esc(m.arquivo||'')}</div>
+        <h1>${esc(m.titulo||m.cap)}</h1>
+        <p class="small muted">${temas.map(t=>`<b>${esc(t.m)}</b>, ${t.qp.toFixed(1)} questão por prova`).join(' — ')}${m.paginas?` · ${esc(m.paginas)} do original`:''}${m.minutos?` · bloco de ${m.minutos} min`:''}</p>
+      </div>
+      <div class="row">
+        <span class="tam"><button data-act="ler-tam" data-arg="-.1" aria-label="Diminuir o texto">A−</button><button data-act="ler-tam" data-arg=".1" aria-label="Aumentar o texto">A+</button></span>
+        <button class="btn ghost" data-act="ler-voltar">Todos os capítulos</button>
+      </div></header>
+
+    ${(m.alertas||[]).length?`<div class="corpo" style="max-width:68ch">
+      <div class="lei" style="border-left-color:var(--accent);background:var(--accent-soft)">
+        <span class="ref" style="color:var(--accent)">antes de ler · ${m.alertas.length} correção${m.alertas.length>1?'ões':''} neste capítulo</span>
+        ${m.alertas.map(a=>`<div style="margin-top:.5em"><b>${esc(a.t)}.</b> ${esc(a.d||'')}</div>`).join('')}
+      </div></div>`:''}
+
+    ${titulos?`<nav class="sumario" aria-label="Seções do capítulo">${titulos}</nav>`:''}
+
+    <article class="corpo" id="ler-corpo">${corpo}</article>
+
+    ${m.questoes?`<div class="corpo" style="max-width:68ch">
+      <div class="lei" style="border-left-color:var(--primary);background:var(--primary-soft)">
+        <span class="ref" style="color:var(--primary)">questões deste capítulo</span>
+        ${esc(m.questoes)}
+        <div class="row" style="margin-top:.8em"><button class="btn primary" data-act="ler-questoes" data-arg="${esc(m.disc)}|${esc(m.arquivo||'').replace(/\.pdf$/i,'')}">Resolver no Caderno</button></div>
+      </div></div>`:''}
+  </div>`;
+};
+/* barra de progresso da leitura, presa ao scroll do capítulo */
+(function(){
+  let raf=0;
+  addEventListener('scroll',()=>{ if(raf) return; raf=requestAnimationFrame(()=>{ raf=0;
+    const c=document.getElementById('ler-corpo'), p=document.getElementById('ler-prog');
+    if(!c||!p) return;
+    const topo=c.offsetTop, alt=c.offsetHeight, y=scrollY+innerHeight*.55;
+    p.style.width=Math.max(0,Math.min(100,(y-topo)/alt*100)).toFixed(1)+'%';
+  })},{passive:true});
+})();
+function cabec(){return `<header class="page-head"><div><div class="eyebrow">Material filtrado</div><h1>Leitura</h1>
+  <p>Só o que a triagem marcou para estudar, com as figuras transcritas e as correções no topo. O PDF completo continua sendo a fonte para o que for visual.</p></div></header>`}
+})();
+</script>
+<script>
 /* ===================== Gabinete · telas (2/2), ações e boot ===================== */
 (function(){
 'use strict';
@@ -3264,12 +3481,50 @@ V.desempenho=function(){
 };
 
 /* ---------- REVISÕES ---------- */
+/* painel de flashcards, dentro de Revisões: um cartão é um fato, com caixas próprias */
+function cartoesPainel(){
+  if(!G.cartoesProntos()){
+    if(G.cartoesFalharam()) return `<section class="panel"><div class="panel-head"><h2>Cartões</h2></div><p class="small muted">O baralho não carregou. Os cartões vivem num arquivo ao lado da página, como as questões — abrindo o <code>Gabinete.html</code> do disco isso não funciona.</p></section>`;
+    /* só dispara quando não há fetch em voo, senão o render se repete sem fim */
+    if(!G.cartoesCarregando()) G.carregarCartoes().then(()=>render()).catch(()=>render());
+    return `<section class="panel"><div class="panel-head"><h2>Cartões</h2></div><p class="small muted">Carregando o baralho…</p></section>`;
+  }
+  const d=G.cartoesDoDia(), r=G.fcResumo();
+  if(!d.total) return `<section class="panel"><div class="panel-head"><h2>Cartões</h2></div><p class="small muted">Nenhum cartão nos temas que estão no plano. Libere degraus em Ritmo e eles aparecem.</p></section>`;
+  if(!d.fila.length) return `<section class="panel"><div class="panel-head"><h2>Cartões</h2><span class="pill good">em dia</span></div>
+    <p class="small muted">Nada vencido hoje. ${r.maduros} de ${r.total} cartões já estão na caixa madura (16 ou 35 dias).</p></section>`;
+
+  const c=d.fila[ui.fc.i%d.fila.length], st=G.cartaoSt(c.id), tema=(G.TEMAS||[]).find(x=>x.k===c.tema);
+  const novo=!st.prox;
+  const frente = c.tipo==='lac'
+    ? esc(c.texto||'').replace(/\{\{(.+?)\}\}/g, (m,x)=>ui.fc.virou?`<b style="color:var(--primary)">${x}</b>`:'<span style="background:var(--surface-2);border-radius:3px;padding:0 18px">&nbsp;</span>')
+    : esc(c.frente||'');
+
+  return `<section class="panel">
+    <div class="panel-head"><h2>Cartões de hoje</h2>
+      <span class="row"><span class="chip">vencidos <b>${d.vencidos.length}</b></span><span class="chip">novos <b>${d.novos.length}</b></span>
+      <span class="chip">caixa <b>${st.cx+1}</b>/5</span>${novo?'<span class="pill info">inédito</span>':''}${c.corrige?'<span class="pill crit">corrige o material</span>':''}</span></div>
+
+    <div class="prose" style="font-size:1.05rem;line-height:1.7">${frente}</div>
+
+    ${ui.fc.virou?`<div class="alert calm"><span class="mark" style="background:var(--primary)">→</span><div>
+        ${c.tipo==='fc'?`<b>${esc(c.verso||'')}</b>`:'<b>Lacunas preenchidas acima.</b>'}
+        <p class="tiny faint" style="margin-top:6px">${esc(c.fonteArquivo||'')}${c.fontePagina?', p. '+c.fontePagina:''}${c.fonteLei?' · '+esc(c.fonteLei):''}${tema?' · '+esc(tema.m):''}</p></div></div>
+      <div class="row"><button class="btn" data-act="fc-resp" data-arg="${esc(c.id)}|0">Errei</button>
+        <button class="btn primary" data-act="fc-resp" data-arg="${esc(c.id)}|1">Acertei</button>
+        <span class="small muted">acertar leva para ${G.FC_INT[Math.min(4,st.cx+1)]} dias; errar volta para 1</span></div>`
+    : `<div class="row"><button class="btn primary" data-act="fc-virar">Mostrar resposta</button>
+        <button class="btn ghost" data-act="fc-pular">Pular</button></div>`}
+  </section>`;
+}
+
 V.revisoes=function(){
   const due=G.dueReviews(), up=G.upcomingReviews().slice(0,12), t=G.today();
   const item=(r,acts)=>`<div class="pi" style="grid-template-columns:minmax(0,1fr) auto"><div><div class="t">${dot(byId[r.disc]?byId[r.disc].bloco:1)}${esc(r.titulo)}</div><div class="s">${esc(byId[r.disc]?byId[r.disc].nome:'')} · ${r.step+1}ª revisão (${G.INTERVALOS[r.step]} d) · ${r.due<t?'venceu há '+G.diff(t,r.due)+' d':r.due===t?'vence hoje':'em '+G.fmtShort(r.due)}</div></div><div class="acts row">${acts}</div></div>`;
   return `
   <header class="page-head"><div><div class="eyebrow">Memória de longo prazo</div><h1>Revisões e caderno de erros</h1><p>Cada unidade com teoria marcada volta em 1, 7, 30 e 90 dias. Revisar é <b>testar-se</b>: feche o material, responda de cabeça ou faça 10 questões do ponto, e só então confira. Reler grifos dá sensação de domínio sem retenção.</p></div>
     <div class="row"><button class="btn" data-act="rev-add">Agendar revisão avulsa</button><button class="btn" data-act="err-add">Anotar erro</button></div></header>
+  ${cartoesPainel()}
   <div class="cols">
     <section class="panel"><div class="panel-head"><h2>Para hoje</h2><span class="chip"><b>${due.length}</b></span></div><div class="pauta">${due.map(r=>item(r,`<button class="btn sm primary" data-act="rev-done" data-arg="${r.id}">Revisei</button><button class="btn sm ghost" data-act="rev-snooze" data-arg="${r.id}|2">+2 d</button>`)).join('')||'<p class="small muted">Nenhuma revisão vencida.</p>'}</div></section>
     <section class="panel"><div class="panel-head"><h2>Próximas</h2></div><div class="pauta">${up.map(r=>item(r,'')).join('')||'<p class="small muted">A fila se forma conforme você marca a teoria das unidades no Edital.</p>'}</div></section>
@@ -3367,7 +3622,7 @@ V.ajustes=function(){
 };
 
 /* ---------- navegação, diálogo, toast, tooltip, timer ---------- */
-const ROUTES=[['hoje','Hoje'],['grupo','Grupo'],['caderno','Caderno'],['questoes','Provas reais'],['plano','Plano'],['ritmo','Ritmo'],['edital','Edital'],['raiox','Raio-X das provas'],['desempenho','Desempenho'],['revisoes','Revisões'],['treino','Treino com IA'],['carreiras','Carreiras SC'],['metodo','Método'],['ajustes','Ajustes']];
+const ROUTES=[['hoje','Hoje'],['grupo','Grupo'],['leitura','Material'],['caderno','Caderno'],['questoes','Provas reais'],['plano','Plano'],['ritmo','Ritmo'],['edital','Edital'],['raiox','Raio-X das provas'],['desempenho','Desempenho'],['revisoes','Revisões'],['treino','Treino com IA'],['carreiras','Carreiras SC'],['metodo','Método'],['ajustes','Ajustes']];
 function renderNav(){
   const p=G.perfil(); if(!p){$('#nav').innerHTML='';return}
   const due=G.dueReviews().length;
@@ -3430,6 +3685,13 @@ setInterval(()=>{const c=$('#clock'); if(c&&ui.timer&&ui.timer.running) c.textCo
 /* ---------- ações ---------- */
 const A={
   go(a){ui.route=a;render();window.scrollTo(0,0)},
+  'ler-tam'(a){G.lerTam(parseFloat(a)); render()},
+  'ler-abrir'(a){const [d,s]=a.split('|'); G.lerAbrir(d,s); window.scrollTo(0,0)},
+  'ler-voltar'(){ui.ler.disc='';ui.ler.slug='';render();window.scrollTo(0,0)},
+  'ler-questoes'(a){const [d,cap]=a.split('|'); ui.cad.disc=d; ui.cad.cap=cap; ui.cad.i=0; ui.cad.resp=null; ui.route='caderno'; render(); window.scrollTo(0,0)},
+  'fc-virar'(){ui.fc.virou=true;render()},
+  'fc-pular'(){ui.fc.i++;ui.fc.virou=false;render()},
+  'fc-resp'(a){const [id,ok]=a.split('|'); G.cartaoResponder(id,ok==='1'); ui.fc.virou=false; render()},
   'cad-resp'(a){const c=ui.cad; if(c.resp!==null) return; c.resp=a;
     const qs=G.cadFiltrar(), q=qs[c.i]; if(!q) return;
     if(!c.t0) c.t0=Date.now();
