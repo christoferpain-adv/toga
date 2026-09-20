@@ -1598,20 +1598,25 @@ window.GAB_FACTS = {
       naoConta:['Estágio e qualquer atividade anterior à colação de grau','Pós-graduação (só contava se iniciada antes da Res. CNJ 75/2009)','Tempo de formado sem exercício comprovável'],
       quando:'Os 3 anos contam da colação de grau e são comprovados na inscrição definitiva — depois das provas escritas, não na inscrição preliminar nem na posse. O MPSC usa a mesma regra.'},
   DISC:[
-    {id:'civ',short:'Civil',nome:'Direito Civil',bloco:1,enam:12,qEst:14},
-    {id:'pc', short:'Processo Civil',nome:'Direito Processual Civil',bloco:1,enam:12,qEst:13.3},
-    {id:'con',short:'Consumidor',nome:'Direito do Consumidor',bloco:1,enam:0,qEst:6},
-    {id:'eca',short:'ECA',nome:'Direito da Criança e do Adolescente',bloco:1,enam:0,qEst:6.7},
-    {id:'pen',short:'Penal',nome:'Direito Penal',bloco:2,enam:12,qEst:10},
-    {id:'pp', short:'Processo Penal',nome:'Direito Processual Penal',bloco:2,enam:0,qEst:9.7},
-    {id:'cst',short:'Constitucional',nome:'Direito Constitucional',bloco:2,enam:16,qEst:8.3},
-    {id:'ele',short:'Eleitoral',nome:'Direito Eleitoral',bloco:2,enam:0,qEst:2},
-    {id:'emp',short:'Empresarial',nome:'Direito Empresarial',bloco:3,enam:6,qEst:6.7},
-    {id:'tri',short:'Tributário/Financeiro',nome:'Direito Tributário e Financeiro',bloco:3,enam:0,qEst:5.7},
-    {id:'amb',short:'Ambiental',nome:'Direito Ambiental',bloco:3,enam:0,qEst:4},
-    {id:'adm',short:'Administrativo',nome:'Direito Administrativo',bloco:3,enam:10,qEst:9},
-    {id:'hum',short:'Humanística',nome:'Noções Gerais de Direito e Formação Humanística',bloco:3,enam:6,qEst:3},
-    {id:'dh', short:'Direitos Humanos',nome:'Direitos Humanos',bloco:3,enam:6,qEst:1.7}
+    {id:'civ',short:'Civil',nome:'Direito Civil',bloco:1,enam:12,qEst:12,curso:'01-direito-civil'},
+    {id:'pc', short:'Processo Civil',nome:'Direito Processual Civil',bloco:1,enam:12,qEst:12,curso:'02-processo-civil'},
+    {id:'con',short:'Consumidor',nome:'Direito do Consumidor',bloco:1,enam:0,qEst:0.8,curso:'03-consumidor'},
+    {id:'lce',short:'Legislação Civil Especial',nome:'Legislação Civil Especial',bloco:1,enam:0,qEst:1.4,curso:'16-legislacao-civil-especial'},
+    {id:'eca',short:'ECA',nome:'Direito da Criança e do Adolescente',bloco:1,enam:0,qEst:0.2,curso:'04-crianca-e-adolescente'},
+    {id:'pen',short:'Penal',nome:'Direito Penal',bloco:2,enam:12,qEst:12,curso:'05-direito-penal'},
+    {id:'lpe',short:'Legislação Penal Especial',nome:'Legislação Penal Especial',bloco:2,enam:0,qEst:1.2,curso:'17-legislacao-penal-especial'},
+    {id:'pp', short:'Processo Penal',nome:'Direito Processual Penal',bloco:2,enam:0,qEst:1.8,curso:'06-processo-penal'},
+    {id:'cst',short:'Constitucional',nome:'Direito Constitucional',bloco:2,enam:16,qEst:14,curso:'07-constitucional'},
+    {id:'tra',short:'Const. do Trabalho',nome:'Direito Constitucional do Trabalho',bloco:2,enam:0,qEst:2.6,curso:'15-trabalho'},
+    {id:'emp',short:'Empresarial',nome:'Direito Empresarial',bloco:3,enam:6,qEst:6,curso:'09-empresarial'},
+    {id:'tri',short:'Const. Tributário',nome:'Direito Constitucional Tributário',bloco:3,enam:0,qEst:2,curso:'10-tributario-e-financeiro'},
+    {id:'adm',short:'Administrativo',nome:'Direito Administrativo',bloco:3,enam:10,qEst:10,curso:'12-administrativo'},
+    {id:'hum',short:'Humanística',nome:'Noções Gerais de Direito e Formação Humanística',bloco:3,enam:6,qEst:6,curso:'13-humanistica'},
+    {id:'dh', short:'Direitos Humanos',nome:'Direitos Humanos',bloco:3,enam:6,qEst:6,curso:'14-direitos-humanos'},
+    // Sem curso no ENAM 2026.2 e sem questão nas 400 mapeadas (Ambiental só via Lei 9.605, 1 em 400).
+    // Ficam zeradas na fase do ENAM e voltam a pesar nas fases s2/s3/c1, já depois da prova.
+    {id:'ele',short:'Eleitoral',nome:'Direito Eleitoral',bloco:2,enam:0,qEst:0,foraEnam:true,qPos:2},
+    {id:'amb',short:'Ambiental',nome:'Direito Ambiental',bloco:3,enam:0,qEst:0,foraEnam:true,qPos:4}
   ],
   MARCOS:[
     {d:'2026-08-25',fim:'2026-09-24',titulo:'Inscrições do ENAM 2026.2 (até 16h)',key:true},
@@ -1655,8 +1660,12 @@ window.GAB_FACTS = {
       {id:'s1',nome:'Fase 1 · Revisão do núcleo rumo ao ENAM',ate:'2026-11-28',
        foco:'Revisão integral puxada por questões: abra cada unidade com 10 a 15 questões FGV, revise a teoria só do que errou e feche com a lei seca do ponto. As oito disciplinas do ENAM são o núcleo de qualquer prova de juiz. Processo Penal segue em manutenção.',
        mix:{questoes:40,teoria:30,lei:20,juris:5,revisao:5},nucleo:['cst','civ','pc','pen','adm','emp','hum','dh'],
-       mult:{cst:1.9,civ:.86,pc:.9,pen:1.2,adm:1.1,emp:.9,dh:3.5,hum:2,pp:.45,con:0,eca:0,ele:0,tri:0,amb:0},
-       metas:['Inscrição no ENAM até 24/09 às 16h (pagamento até 25/09) — uma para cada um','Semana 1, diagnóstico: resolver o ENAM 2026.1 cronometrado, lançar os acertos por disciplina e marcar Fraco/Médio/Forte em Ajustes','Um treino por quinzena com as provas anteriores do ENAM (2024.1 a 2025.2), 5 horas, domingo à tarde','Constitucional é a disciplina nº 1: 16 questões, e o programa puxa para dentro dela prisões, prova ilícita e sistema tributário','Humanística e Direitos Humanos somam 12 questões (15% da prova): reserve blocos fixos','Meta de segurança: 62 ou mais acertos antes da prova — a taxa de habilitação já variou de 6% a 24%']},
+       // O peso já vem da incidência real (qEst = questões por prova, medidas em 400 questões).
+       // O multiplicador só registra os desvios deliberados: Humanística rende menos porque 8 das
+       // suas 30 questões (antidiscriminação) não estão no curso; Const. do Trabalho quase todo já
+       // vem por dentro de Constitucional; Direitos Humanos sobe porque absorve a antidiscriminação.
+       mult:{cst:1,civ:1,pc:1,pen:1,adm:1,emp:1,dh:1.25,hum:.7,tri:1,pp:1,lce:1,lpe:1,con:1,tra:.35,eca:1,ele:0,amb:0},
+       metas:['Inscrição no ENAM até 24/09 às 16h (pagamento até 25/09) — uma para cada um','Semana 1, diagnóstico: resolver o ENAM 2026.1 cronometrado, lançar os acertos por disciplina e marcar Fraco/Médio/Forte em Ajustes','Antes da semana 1, ler a folha única de correções do material: são 152 alertas catalogados, e quatro deles são erro ativo (injúria racial pelo art. 140 §3º, quóruns de Empresarial, art. 19 do Marco Civil, tese superada no Consumidor)','Antidiscriminação (8 das 30 questões de Humanística) não está no curso de Humanística: está no Direto ao Ponto seção 4.8 (33p) + Jurisprudência Estratégica cap. 10 (18p) + Jurisprudência Internacional cap. 4 (43p)','Um treino por quinzena com as provas anteriores do ENAM (2024.1 a 2025.2), 5 horas, domingo à tarde','Constitucional é a disciplina nº 1: 16 questões, e o programa puxa para dentro dela prisões, prova ilícita e sistema tributário','Meta de segurança: 62 ou mais acertos antes da prova — a taxa de habilitação já variou de 6% a 24%']},
       {id:'s2',nome:'Fase 2 · Aguardando o resultado',ate:'2027-02-05',
        foco:'Entre a prova (29/11) e a homologação (05/02), o programa do ENAM já foi revisado. É a janela para abrir o que ele não cobra e que toda prova de magistratura exige: Processo Penal, Consumidor, ECA, Tributário, Ambiental e Eleitoral.',
        mix:{teoria:40,questoes:35,lei:15,juris:5,revisao:5},mult:{pp:1.5,con:1.4,eca:1.4,tri:1.4,amb:1.4,ele:1.4,cst:.7,hum:.5,dh:.5},nucleo:['pp','con','eca','tri','amb','ele'],
