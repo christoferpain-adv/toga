@@ -3119,6 +3119,104 @@ V.ritmo=function(){
 })();
 </script>
 <script>
+/* ===================== Gabinete · caderno de questões ===================== */
+(function(){
+'use strict';
+const G=window.G, {$,esc,DISC,byId}=G, S=G.S, V=G.views, ui=G.ui;
+
+ui.cad={disc:'cst',soEnam:false,cap:'',i:0,resp:null,t0:0,q:0,ok:0,vistas:{}};
+const BANCO={};            /* cache por disciplina, carregado sob demanda */
+const CARREGANDO={};
+
+G.bancoPronto=d=>!!BANCO[d];
+G.carregarBanco=function(d){
+  if(BANCO[d]||CARREGANDO[d]) return Promise.resolve(BANCO[d]);
+  CARREGANDO[d]=true;
+  return fetch('questoes/'+d+'.json')
+    .then(r=>{if(!r.ok) throw new Error('HTTP '+r.status); return r.json()})
+    .then(j=>{BANCO[d]=Array.isArray(j)?j:[]; CARREGANDO[d]=false; return BANCO[d]})
+    .catch(e=>{CARREGANDO[d]=false; BANCO[d]=null; throw e});
+};
+/* tema do macro-mapa a que a questão pertence, via o capítulo de origem */
+function temaDaQuestao(q){
+  const lista=(G.CAPS||{})[q.disc]||[];
+  const c=lista.find(x=>x.a&&q.cap&&x.a.replace(/\.pdf$/i,'')===q.cap);
+  return c&&c.t&&c.t.length?c.t[0]:null;
+}
+function filtrar(){
+  const c=ui.cad, todas=BANCO[c.disc]||[];
+  return todas.filter(q=>(!c.soEnam||q.enam)&&(!c.cap||q.cap===c.cap)&&q.gab);
+}
+G.cadFiltrar=filtrar;
+
+V.caderno=function(){
+  const c=ui.cad, carregado=!!BANCO[c.disc], falhou=BANCO[c.disc]===null;
+  const d=byId[c.disc]||{};
+
+  const filtros=`<div class="filters row">
+    <select data-inp="cad-disc" aria-label="Disciplina">${DISC.filter(x=>(G.CAPS||{})[x.id]).map(x=>`<option value="${x.id}"${x.id===c.disc?' selected':''}>${esc(x.nome)}</option>`).join('')}</select>
+    ${carregado?`<select data-inp="cad-cap" aria-label="Capítulo"><option value="">Todos os capítulos</option>${[...new Set(BANCO[c.disc].map(q=>q.cap))].sort().map(x=>`<option value="${esc(x)}"${x===c.cap?' selected':''}>${esc(x)}</option>`).join('')}</select>`:''}
+    <button class="btn sm${c.soEnam?' primary':''}" data-act="cad-enam">Só as do ENAM</button>
+  </div>`;
+
+  if(falhou) return `<header class="page-head"><div><div class="eyebrow">Caderno</div><h1>Caderno de questões</h1></div></header>
+    <div class="alert"><span class="mark">off</span><div><b>O banco não carregou</b><p class="small">As 5.593 questões ficam em arquivos ao lado da página e são buscadas sob demanda. Isso não funciona ao abrir o <code>Gabinete.html</code> direto do disco — use a versão publicada.</p></div></div>`;
+
+  if(!carregado){
+    G.carregarBanco(c.disc).then(()=>G.render&&G.render()).catch(()=>G.render&&G.render());
+    return `<header class="page-head"><div><div class="eyebrow">Caderno</div><h1>Caderno de questões</h1>
+      <p>Questões comentadas do próprio curso, respondidas aqui. O acerto entra no portão de 8 em 10 do macro-tema, sem lançamento à mão.</p></div></header>
+      ${filtros}<div class="panel"><p class="muted">Carregando ${esc(d.nome||c.disc)}…</p></div>`;
+  }
+
+  const qs=filtrar();
+  if(!qs.length) return `<header class="page-head"><div><div class="eyebrow">Caderno</div><h1>Caderno de questões</h1></div></header>${filtros}
+    <div class="panel"><p class="muted">Nenhuma questão com esses filtros.</p></div>`;
+
+  if(c.i>=qs.length) c.i=0;
+  const q=qs[c.i], k=temaDaQuestao(q), tema=k&&(G.TEMAS||[]).find(x=>x.k===k);
+  const respondeu=c.resp!==null;
+
+  const alts=q.alt.map(a=>{
+    let cls='opt';
+    if(respondeu){ if(a.l===q.gab) cls+=' ok'; else if(a.l===c.resp) cls+=' bad' }
+    return `<button class="${cls}" data-act="cad-resp" data-arg="${a.l}"${respondeu?' disabled':''}><b>${a.l})</b><span>${esc(a.t)}</span></button>`;
+  }).join('');
+
+  return `<header class="page-head"><div>
+      <div class="eyebrow">Caderno · ${esc(d.short||c.disc)}</div>
+      <h1>Caderno de questões</h1>
+      <p>Questões comentadas do próprio curso. O que você acerta aqui entra direto no portão de 8 em 10 do macro-tema — sem lançamento à mão.</p></div>
+    <div class="row">${c.q?`<button class="btn primary" data-act="cad-fechar">Encerrar (${c.ok}/${c.q})</button>`:''}</div></header>
+
+  ${filtros}
+
+  <div class="stats">
+    <div class="stat"><span class="v num">${qs.length}</span><span class="l">questões no filtro</span><span class="d">${qs.filter(x=>x.enam).length} do ENAM real</span></div>
+    <div class="stat"><span class="v num">${c.i+1}</span><span class="l">posição</span><span class="d">de ${qs.length}</span></div>
+    <div class="stat"><span class="v num">${c.q?Math.round(c.ok/c.q*100)+'%':'—'}</span><span class="l">acerto nesta sessão</span><span class="d">${c.ok} de ${c.q}</span></div>
+    ${tema?`<div class="stat"><span class="v num">${tema.qp.toFixed(1)}</span><span class="l">q/prova deste tema</span><span class="d">${esc(tema.m)}</span></div>`:''}
+  </div>
+
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Questão ${c.i+1}</h2>
+      <span class="row">${q.enam?'<span class="pill crit">ENAM real</span>':''}<span class="chip">${esc(q.fonte||q.ano||'')}</span></span>
+    </div>
+    <div class="prose"><p>${esc(q.e)}</p></div>
+    <div class="stack" style="gap:8px">${alts}</div>
+    ${respondeu?`<div class="alert ${c.resp===q.gab?'calm':'gold'}"><span class="mark"${c.resp===q.gab?' style="background:var(--good)"':''}>${c.resp===q.gab?'✓':'✗'}</span><div>
+        <b>Gabarito: ${q.gab}</b>
+        ${q.com?`<div class="small" style="margin-top:6px;line-height:1.6">${esc(q.com)}</div>`:'<p class="small muted">Sem comentário no material.</p>'}
+      </div></div>
+      <div class="row"><button class="btn primary" data-act="cad-prox">Próxima</button>
+        ${tema?`<span class="small muted">conta para <b>${esc(tema.m)}</b></span>`:'<span class="small muted">sem macro-tema ligado a este capítulo</span>'}</div>`:''}
+    <div class="tiny faint">${esc(q.cap||'')}</div>
+  </section>`;
+};
+})();
+</script>
+<script>
 /* ===================== Gabinete · telas (2/2), ações e boot ===================== */
 (function(){
 'use strict';
@@ -3269,7 +3367,7 @@ V.ajustes=function(){
 };
 
 /* ---------- navegação, diálogo, toast, tooltip, timer ---------- */
-const ROUTES=[['hoje','Hoje'],['grupo','Grupo'],['questoes','Questões'],['plano','Plano'],['ritmo','Ritmo'],['edital','Edital'],['raiox','Raio-X das provas'],['desempenho','Desempenho'],['revisoes','Revisões'],['treino','Treino com IA'],['carreiras','Carreiras SC'],['metodo','Método'],['ajustes','Ajustes']];
+const ROUTES=[['hoje','Hoje'],['grupo','Grupo'],['caderno','Caderno'],['questoes','Provas reais'],['plano','Plano'],['ritmo','Ritmo'],['edital','Edital'],['raiox','Raio-X das provas'],['desempenho','Desempenho'],['revisoes','Revisões'],['treino','Treino com IA'],['carreiras','Carreiras SC'],['metodo','Método'],['ajustes','Ajustes']];
 function renderNav(){
   const p=G.perfil(); if(!p){$('#nav').innerHTML='';return}
   const due=G.dueReviews().length;
@@ -3332,6 +3430,24 @@ setInterval(()=>{const c=$('#clock'); if(c&&ui.timer&&ui.timer.running) c.textCo
 /* ---------- ações ---------- */
 const A={
   go(a){ui.route=a;render();window.scrollTo(0,0)},
+  'cad-resp'(a){const c=ui.cad; if(c.resp!==null) return; c.resp=a;
+    const qs=G.cadFiltrar(), q=qs[c.i]; if(!q) return;
+    if(!c.t0) c.t0=Date.now();
+    c.q++; if(a===q.gab) c.ok++;
+    render()},
+  'cad-prox'(){const c=ui.cad; c.resp=null; c.i++; render(); window.scrollTo(0,0)},
+  'cad-enam'(){const c=ui.cad; c.soEnam=!c.soEnam; c.i=0; c.resp=null; render()},
+  'cad-fechar'(){const c=ui.cad; if(!c.q) return;
+    const min=Math.max(1,Math.round((Date.now()-(c.t0||Date.now()))/60000));
+    /* atribui ao macro-tema do capítulo em foco, quando houver */
+    const qs=G.cadFiltrar(), tema=(()=>{const l=(G.CAPS||{})[c.disc]||[]; const cap=c.cap||(qs[0]&&qs[0].cap);
+      const x=l.find(y=>y.a&&cap&&y.a.replace(/\.pdf$/i,'')===cap); return x&&x.t&&x.t[0]||''})();
+    const antes=tema?G.temaFechado(tema):false;
+    G.addSession({disc:c.disc,tipo:'questoes',min,q:c.q,ok:c.ok,nota:'Caderno'+(c.cap?' · '+c.cap:''),tema});
+    const passou=tema&&!antes&&G.temaFechado(tema);
+    c.q=0;c.ok=0;c.t0=0;c.resp=null;
+    if(passou){const s=G.liberar(); render(); G.toast(s.length?`Tema fechado no portão — ${s.length} liberado${s.length>1?'s':''} na fila`:'Tema fechado no portão')}
+    else {render(); G.toast('Caderno encerrado e registrado')}},
   'tema-nivel'(a){const [k,n]=a.split('|'); G.temaNivel(k,+n); const s=G.liberar(); render(); G.toast(s.length?`Reorçado — ${s.length} degrau${s.length>1?'s':''} liberado${s.length>1?'s':''}`:'Reorçado')},
   'tema-degrau'(a){const [k,g]=a.split('|'); G.temaSt(k).g=Math.max(0,Math.min(3,+g)); G.touch('temas'); render()},
   'fila-liberar'(){const s=G.liberar(); render(); G.toast(s.length?`${s.length} degrau${s.length>1?'s':''} liberado${s.length>1?'s':''}: ${s.slice(0,2).map(x=>x.tema.m).join(', ')}${s.length>2?'…':''}`:'A folga não cobre o próximo degrau')},
@@ -3412,7 +3528,9 @@ const A={
 G.dlg=dlg;
 document.addEventListener('click',e=>{const b=e.target.closest('[data-act]'); if(!b||b.disabled)return; const fn=A[b.dataset.act]||(G.extraActions||{})[b.dataset.act]; if(fn){e.preventDefault();fn(b.dataset.arg||'',b)}});
 document.addEventListener('input',e=>{const k=e.target.dataset&&e.target.dataset.inp; if(!k)return; const v=e.target.value;
-  if(k==='rx-busca'){ui.rxBusca=v;G.rxRefresh()} else if(k==='ai-tema'){ui.aiTema=v} else if(k==='disc-resp'&&ui.disc){ui.disc.resposta=v}});
+  if(k==='rx-busca'){ui.rxBusca=v;G.rxRefresh()} else if(k==='ai-tema'){ui.aiTema=v} else if(k==='disc-resp'&&ui.disc){ui.disc.resposta=v}
+  else if(k==='cad-disc'){ui.cad.disc=v;ui.cad.cap='';ui.cad.i=0;ui.cad.resp=null;render()}
+  else if(k==='cad-cap'){ui.cad.cap=v;ui.cad.i=0;ui.cad.resp=null;render()}});
 document.addEventListener('change',e=>{const k=e.target.dataset&&e.target.dataset.chg; if(!k)return; const v=e.target.value;
   if(k==='rx-disc'){ui.rxDisc=v;G.rxRefresh()} else if(k==='rx-ano'){ui.rxAno=v;G.rxRefresh()}
   else if(k==='ai-disc'){ui.aiDisc=v;ui.aiUnit='';render()} else if(k==='ai-unit'){ui.aiUnit=v}
